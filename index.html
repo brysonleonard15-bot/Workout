@@ -735,13 +735,53 @@
     $("primaryContainer").innerHTML = "";
     $("auxContainer").innerHTML = "";
 
-    // Primary rows
+    const primaryGroup = $("primaryGroup").value;
+    const primaryList = primaryGroups[primaryGroup] ?? [];
+
+    // Simple deterministic pick helper (no randomness, stable results)
+    const pickN = (arr, n, start=0) => {
+      const out = [];
+      if (!arr.length) return out;
+      for (let i=0; i<n; i++){
+        out.push(arr[(start + i) % arr.length]);
+      }
+      return out;
+    };
+
+    // Suggested auxiliary group stacks by primary group
+    const auxPlanByPrimary = {
+      "Chest": ["Triceps", "Shoulders", "Abs", "Rear Delts", "Forearms"],
+      "Back": ["Biceps", "Rear Delts", "Abs", "Upper Back / Traps", "Forearms"],
+      "Legs": ["Quads", "Hamstrings", "Calves", "Abs", "Forearms"],
+      "Shoulders": ["Rear Delts", "Triceps", "Abs", "Upper Back / Traps", "Biceps"],
+      "Arms": ["Biceps", "Triceps", "Forearms", "Abs", "Rear Delts"]
+    };
+
+    const auxGroupsOrder = auxPlanByPrimary[primaryGroup] || Object.keys(auxGroups);
+
+    // Primary rows: pick the first N exercises for the selected group
+    const primChoices = pickN(primaryList, plan.pCount, 0);
     for (let i=0; i<plan.pCount; i++){
-      addPrimaryRow({ setsValue: plan.pSets, repsValue: plan.pReps, restValue: plan.pRest });
+      addPrimaryRow({
+        setsValue: plan.pSets,
+        repsValue: plan.pReps,
+        restValue: plan.pRest,
+        exerciseValue: primChoices[i] || ""
+      });
     }
-    // Aux rows
+
+    // Aux rows: cycle through recommended aux groups and pick first exercise from each group
     for (let i=0; i<plan.aCount; i++){
-      addAuxRow({ setsValue: plan.aSets, repsValue: plan.aReps, restValue: plan.aRest });
+      const g = auxGroupsOrder[i % auxGroupsOrder.length];
+      const exList = auxGroups[g] ?? [];
+      const ex = exList.length ? exList[i % exList.length] : "";
+      addAuxRow({
+        groupValue: g,
+        exerciseValue: ex,
+        setsValue: plan.aSets,
+        repsValue: plan.aReps,
+        restValue: plan.aRest
+      });
     }
 
     toast(`Auto-filled: ${mode}`);
