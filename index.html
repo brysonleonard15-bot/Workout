@@ -1317,7 +1317,7 @@ if (!shownItems.length){
   $("randomWorkoutBtn").addEventListener("click", () => buildRandomWorkout());
 
   // ----------------------------
-  // Rest timer (tap-to-start)
+  // Rest timer (tap-to-start) - safe/event delegation
   // ----------------------------
   let restTimerInterval = null;
   let restRemaining = 0;
@@ -1331,16 +1331,20 @@ if (!shownItems.length){
   }
 
   function showRestTimer(show){
-    $("restTimer").style.display = show ? "block" : "none";
+    const box = $("restTimer");
+    if (box) box.style.display = show ? "block" : "none";
   }
 
   function updateRestTimerUI(){
-    $("restTimerLabel").textContent = `Rest: ${fmtMMSS(restRemaining)}`;
+    const lab = $("restTimerLabel");
+    if (lab) lab.textContent = `Rest: ${fmtMMSS(restRemaining)}`;
   }
 
   function restBeep(){
     try{
-      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const Ctx = window.AudioContext || window.webkitAudioContext;
+      if (!Ctx) return;
+      const ctx = new Ctx();
       const o = ctx.createOscillator();
       const g = ctx.createGain();
       o.type = "sine";
@@ -1348,20 +1352,21 @@ if (!shownItems.length){
       g.gain.value = 0.08;
       o.connect(g); g.connect(ctx.destination);
       o.start();
-      setTimeout(()=>{ o.stop(); ctx.close(); }, 180);
-    }catch(e){ /* ignore */ }
+      setTimeout(()=>{ o.stop(); ctx.close && ctx.close(); }, 180);
+    }catch(e){}
   }
 
   function startRestTimer(seconds){
     restRemaining = parseInt(seconds || "0", 10) || 0;
     if (!restRemaining){ toast("No rest selected"); return; }
     restPaused = false;
+    const pauseBtn = $("restTimerPauseBtn");
+    if (pauseBtn) pauseBtn.textContent = "Pause";
     showRestTimer(true);
     updateRestTimerUI();
 
     if (restTimerInterval) clearInterval(restTimerInterval);
-    const startAt = Date.now();
-    let lastTick = startAt;
+    let lastTick = Date.now();
 
     restTimerInterval = setInterval(() => {
       if (restPaused) { lastTick = Date.now(); return; }
@@ -1393,45 +1398,29 @@ if (!shownItems.length){
     showRestTimer(false);
   }
 
-  on("restTimerStopBtn", "click", () => stopRestTimer());
-  on("restTimerPauseBtn", "click", () => {
+  // Timer buttons
+  const stopBtn = $("restTimerStopBtn");
+  if (stopBtn) stopBtn.addEventListener("click", () => stopRestTimer());
+
+  const pauseBtn = $("restTimerPauseBtn");
+  if (pauseBtn) pauseBtn.addEventListener("click", () => {
     restPaused = !restPaused;
-    $("restTimerPauseBtn").textContent = restPaused ? "Resume" : "Pause";
+    pauseBtn.textContent = restPaused ? "Resume" : "Pause";
   });
 
-  function attachRestTapHandlers(){
-    // Start timer when user taps a rest dropdown
-    const bind = (row) => {
-      const restSel = row.querySelector(".restSel");
-      if (!restSel) return;
-      // avoid double binding
-      if (restSel.dataset.timerBound === "1") return;
-      restSel.dataset.timerBound = "1";
-      restSel.addEventListener("change", () => {
-        // auto-start on change
-        startRestTimer(restSel.value);
-      });
-      // also allow tap/click to start with current value (helpful if already chosen)
-      restSel.addEventListener("click", () => {
-        if (restSel.value) startRestTimer(restSel.value);
-      });
-    };
-
-    Array.from($("primaryContainer").children).forEach(bind);
-    Array.from($("auxContainer").children).forEach(bind);
-  }
-
-  // After adding rows, reattach rest handlers
-  const _addPrimaryRow = addPrimaryRow;
-  addPrimaryRow = function(preset={}){
-    _addPrimaryRow(preset);
-    attachRestTapHandlers();
-  };
-  const _addAuxRow = addAuxRow;
-  addAuxRow = function(preset={}){
-    _addAuxRow(preset);
-    attachRestTapHandlers();
-  };
+  // Event delegation: any rest dropdown change/click starts timer
+  document.addEventListener("change", (e) => {
+    const t = e.target;
+    if (t && t.classList && t.classList.contains("restSel")){
+      startRestTimer(t.value);
+    }
+  });
+  document.addEventListener("click", (e) => {
+    const t = e.target;
+    if (t && t.classList && t.classList.contains("restSel")){
+      if (t.value) startRestTimer(t.value);
+    }
+  });
 
 
   // ----------------------------
@@ -1471,7 +1460,7 @@ if (!shownItems.length){
   </div>
 
   <div id="revFooter" style="position:fixed;left:12px;bottom:10px;z-index:50;font-size:11px;opacity:.55;">
-    Rev v11 • Build 2026-02-24 03:17:00
+    Rev v11 • Build 2026-02-24 03:21:25
   </div>
 
 </body>
