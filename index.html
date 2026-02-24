@@ -509,6 +509,8 @@
 (function(){
   const BUILD_VERSION = "2026-02-24 01:19:08";
   console.log("Workout Log Build:", BUILD_VERSION);
+  // Safari-safe clone helper
+  const sClone = (obj) => (typeof structuredClone === "function" ? sClone(obj) : JSON.parse(JSON.stringify(obj)));
   // ----------------------------
   // Data: groups + exercises
   // ----------------------------
@@ -884,9 +886,9 @@
     try{
       const raw = localStorage.getItem(TEMPLATES_KEY);
       const obj = JSON.parse(raw || "null");
-      if (!obj || typeof obj !== "object") return structuredClone(DEFAULT_TEMPLATES);
+      if (!obj || typeof obj !== "object") return sClone(DEFAULT_TEMPLATES);
       // Normalize
-      const out = structuredClone(DEFAULT_TEMPLATES);
+      const out = sClone(DEFAULT_TEMPLATES);
       for (const k of ["light","moderate","intense"]){
         if (!obj[k]) continue;
         out[k] = {
@@ -902,7 +904,7 @@
       }
       return out;
     }catch(e){
-      return structuredClone(DEFAULT_TEMPLATES);
+      return sClone(DEFAULT_TEMPLATES);
     }
   }
 
@@ -2173,7 +2175,7 @@ if (!shownItems.length){
   });
 
   $("resetTemplatesBtn").addEventListener("click", () => {
-    templates = structuredClone(DEFAULT_TEMPLATES);
+    templates = sClone(DEFAULT_TEMPLATES);
     saveTemplates(templates);
     toast("Templates reset");
   });
@@ -2289,7 +2291,7 @@ if (!shownItems.length){
 </script>
 
   <div id="revFooter" style="position:fixed;left:12px;bottom:10px;z-index:50;font-size:11px;opacity:.55;">
-    Rev v14 • Build 2026-02-24 02:16:17
+    Rev v15 • Build 2026-02-24 02:27:40
   </div>
 
 </body>
