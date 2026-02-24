@@ -99,7 +99,7 @@
 
     label{display:block;font-size:12px;color:var(--muted);margin:0 0 6px;}
     input, select, button, textarea{font: inherit;}
-    input[type="date"], input[type="text"], select, textarea{
+    input[type="date"], input[type="text"], input[type="number"], select, textarea{
       width:100%;
       background: rgba(0,0,0,.24);
       color:var(--text);
@@ -110,7 +110,7 @@
       transition: transform .05s ease, border-color .15s ease, background .15s ease;
     }
     textarea{min-height:84px; resize:vertical}
-    input[type="date"]:focus, input[type="text"]:focus, select:focus, textarea:focus{
+    input[type="date"]:focus, input[type="text"]:focus, input[type="number"]:focus, select:focus, textarea:focus{
       border-color: rgba(49,243,176,.55);
       box-shadow: 0 0 0 4px rgba(49,243,176,.12);
     }
@@ -126,9 +126,9 @@
       display:grid;
     }
     /* Primary rows: Exercise | Sets | Reps | Rest | Remove */
-    .row.primary{grid-template-columns: 1.7fr .8fr .8fr .9fr .9fr auto;}
+    .row.primary{grid-template-columns: 1.55fr .75fr .75fr .85fr .85fr auto;}
     /* Aux rows: Aux Group | Exercise | Sets | Reps | Rest | Remove */
-    .row.aux{grid-template-columns: 1.25fr 1.45fr .8fr .8fr .9fr .9fr auto;}
+    .row.aux{grid-template-columns: 1.1fr 1.25fr .75fr .75fr .85fr .85fr auto;}
 
     @media (max-width: 780px){
       .row.primary{grid-template-columns:1fr 1fr; align-items:stretch}
@@ -215,23 +215,11 @@
     }
     .toast.show{opacity:1; transform: translateX(-50%) translateY(-2px)}
   
-    body.perf main{grid-template-columns:1fr;}
-    body.perf aside{display:none;}
-    body.perf header{padding-bottom:8px;}
-    body.perf .card{box-shadow:none;}
-    body.perf input[type="date"], body.perf input[type="text"], body.perf input[type="number"], body.perf select, body.perf textarea{font-size:16px;}
-    body.perf .btn{font-size:16px; padding:12px 14px;}
-
-
-    /* Per-set details compact layout */
-    .setDetailsGrid{grid-template-columns: 70px 1fr 1fr;}
-    .setCell{}
     @media (max-width: 520px){
       .setDetailsGrid{grid-template-columns: 1fr 1fr;}
-      .setHdr, .wtHdr, .repsHdr{display:none;}
+      .setHdr,.wtHdr,.repsHdr{display:none;}
       .setCell{grid-column: 1 / -1;}
     }
-
 </style>
 </head>
 <body>
@@ -254,20 +242,10 @@
           <b>Build today’s workout</b>
           <span>Pick a primary lift focus, add auxiliaries, then save.</span>
         </div>
-        <div style="display:flex; gap:10px; flex-wrap:wrap; justify-content:flex-end;"><span class="pill"><span class="dot"></span>Local-only storage</span><button type="button" class="btn" id="perfModeBtn">⚡ Performance</button><button type="button" class="btn" id="profileBtn">👤 Profile</button></div>
+        <div style="display:flex; gap:10px; flex-wrap:wrap; justify-content:flex-end;"><span class="pill"><span class="dot"></span>Local-only storage</span><button type="button" class="btn" id="profileBtn">👤 Profile</button></div>
       </div>
       <div class="bd">
-        
-        <div class="logItem" id="dashboardCard">
-          <div class="top">
-            <div>
-              <h3 style="margin:0;">Dashboard</h3>
-              <div class="meta" id="dashMeta">This week • Personal stats</div>
-            </div>
-          </div>
-          <ul id="dashList" style="margin-top:10px;"></ul>
-        </div>
-<div class="grid2">
+        <div class="grid2">
           <div>
             <label for="workoutDate">Date</label>
             <input id="workoutDate" type="date" />
@@ -391,72 +369,28 @@
         <div class="hd">
           <div class="title">
             <b>Template settings</b>
-            <span>Customize Light / Moderate / Intense defaults (counts, sets, reps, rest). Saved locally.</span>
+            <span>Customize Light / Moderate / Intense defaults. Saved locally.</span>
           </div>
           <div style="display:flex; gap:10px; flex-wrap:wrap;">
             <button type="button" class="btn" id="closeTemplatesBtn">Close</button>
-            <button type="button" class="btn btnPrimary" id="saveTemplatesBtn">Save changes</button>
+            <button type="button" class="btn btnPrimary" id="saveTemplatesBtn">Save</button>
           </div>
         </div>
         <div class="bd">
-          <div class="hint" style="margin-top:0;">
-            Tip: Keep “Intense” hard by effort + rest, not just endless sets. You can still tune volume here.
-          </div>
-
-          <div class="divider"></div>
-
           <div id="templatesEditor"></div>
-
-          <div class="divider"></div>
-
-          <div style="display:flex; gap:10px; flex-wrap:wrap;">
-            <button type="button" class="btn" id="addTemplateNoteBtn">Add note to help users</button>
-            <span class="pill"><span class="dot"></span>Stored in localStorage</span>
-          </div>
-          <div class="hint" id="templateNote" style="display:none; margin-top:10px;">
-            Recommended starting point:
-            Light = technique/recovery, Moderate = baseline hypertrophy, Intense = heavier/closer to failure with longer rests.
-          </div>
         </div>
       </div>
     </div>
   </div>
-
-
-  <!-- Share Modal -->
-  <div id="shareModal" style="display:none; position:fixed; inset:0; z-index:120; background: rgba(0,0,0,.55);">
-    <div style="max-width:980px; margin:22px auto; padding:0 18px;">
-      <div class="card" style="box-shadow: 0 30px 90px rgba(0,0,0,.65);">
-        <div class="hd">
-          <div class="title">
-            <b>Share workout</b>
-            <span>Copy a link that contains this workout. Recipient can open it and import to their log.</span>
-          </div>
-          <div style="display:flex; gap:10px; flex-wrap:wrap;">
-            <button type="button" class="btn" id="closeShareBtn">Close</button>
-            <button type="button" class="btn btnPrimary" id="copyShareBtn">Copy link</button>
-          </div>
-        </div>
-        <div class="bd">
-          <label for="shareLink">Share link</label>
-          <textarea id="shareLink" spellcheck="false"></textarea>
-          <div class="hint" style="margin-top:10px;">
-            Note: The link stores workout data in the URL. Great for sharing a single session/template without any backend.
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
 
   <!-- Profile Modal -->
-  <div id="profileModal" style="display:none; position:fixed; inset:0; z-index:130; background: rgba(0,0,0,.55);">
+  <div id="profileModal" style="display:none; position:fixed; inset:0; z-index:110; background: rgba(0,0,0,.55);">
     <div style="max-width:980px; margin:22px auto; padding:0 18px;">
       <div class="card" style="box-shadow: 0 30px 90px rgba(0,0,0,.65);">
         <div class="hd">
           <div class="title">
-            <b>User profile settings</b>
-            <span>Per-user preferences (stored locally). Used for smarter defaults and random workouts.</span>
+            <b>User profile</b>
+            <span>Per-user preferences (stored locally).</span>
           </div>
           <div style="display:flex; gap:10px; flex-wrap:wrap;">
             <button type="button" class="btn" id="closeProfileBtn">Close</button>
@@ -493,9 +427,28 @@
               <input id="profileRepHigh" type="number" min="1" max="30" step="1" />
             </div>
           </div>
-          <div class="hint" style="margin-top:10px;">
-            These settings are optional. They help tailor random workouts and future recommendations.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Share Modal -->
+  <div id="shareModal" style="display:none; position:fixed; inset:0; z-index:120; background: rgba(0,0,0,.55);">
+    <div style="max-width:980px; margin:22px auto; padding:0 18px;">
+      <div class="card" style="box-shadow: 0 30px 90px rgba(0,0,0,.65);">
+        <div class="hd">
+          <div class="title">
+            <b>Share workout</b>
+            <span>Copy a link that contains this workout. Recipient can open it and load it.</span>
           </div>
+          <div style="display:flex; gap:10px; flex-wrap:wrap;">
+            <button type="button" class="btn" id="closeShareBtn">Close</button>
+            <button type="button" class="btn btnPrimary" id="copyShareBtn">Copy link</button>
+          </div>
+        </div>
+        <div class="bd">
+          <label for="shareLink">Share link</label>
+          <textarea id="shareLink" spellcheck="false"></textarea>
         </div>
       </div>
     </div>
@@ -505,55 +458,10 @@
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-
 <script>
-// --- Diagnostics / crash protection ---
-document.addEventListener('DOMContentLoaded', function(){
-  function showError(msg){
-    try{
-      var el = document.getElementById("fatalError");
-      if (!el){
-        el = document.createElement("div");
-        el.id = "fatalError";
-        el.style.position = "fixed";
-        el.style.left = "12px";
-        el.style.right = "12px";
-        el.style.bottom = "46px";
-        el.style.zIndex = "9999";
-        el.style.padding = "12px 14px";
-        el.style.borderRadius = "14px";
-        el.style.background = "rgba(255,91,110,.18)";
-        el.style.border = "1px solid rgba(255,91,110,.35)";
-        el.style.color = "rgba(233,238,252,1)";
-        el.style.fontSize = "12.5px";
-        el.style.lineHeight = "1.35";
-        el.style.boxShadow = "0 18px 40px rgba(0,0,0,.45)";
-        document.body.appendChild(el);
-      }
-      el.textContent = msg;
-    }catch(e){}
-  }
-
-  window.addEventListener("error", function(e){
-    showError("Script error: " + (e && e.message ? e.message : "unknown") + " (see console)");
-  });
-
-  window.addEventListener("unhandledrejection", function(e){
-    var msg = (e && e.reason && e.reason.message) ? e.reason.message : String(e.reason || "unknown");
-    showError("Promise error: " + msg + " (see console)");
-  });
-
-  // Expose for internal use
-  window.__showWorkoutLogError = showError;
-})();
-</script>
-<script>
-// --- App ---
-(function(){
-  const BUILD_VERSION = "2026-02-24 01:19:08";
+document.addEventListener('DOMContentLoaded', () => {
+  const BUILD_VERSION = "2026-02-24 02:49:35";
   console.log("Workout Log Build:", BUILD_VERSION);
-  // Safari-safe clone helper
-  const sClone = (obj) => (typeof structuredClone === "function" ? sClone(obj) : JSON.parse(JSON.stringify(obj)));
   // ----------------------------
   // Data: groups + exercises
   // ----------------------------
@@ -716,7 +624,7 @@ document.addEventListener('DOMContentLoaded', function(){
   // Keep reps dropdown simple but cover the recommended ranges
   const repOptions = ["5","6","8","10","12","15","20"];
   
-    // Weight (lbs)
+    // Default Weight (lbs)
     const wtWrap = document.createElement("div");
     const wtLab = document.createElement("label");
     wtLab.textContent = "Default Wt";
@@ -729,7 +637,7 @@ document.addEventListener('DOMContentLoaded', function(){
     wtWrap.appendChild(wtLab);
     wtWrap.appendChild(wtInp);
 
-    // Per-set details (weights + reps per set)
+    // Per-set details (weight + reps per set)
     const detailsWrap = document.createElement("div");
     detailsWrap.className = "setDetailsWrap";
     detailsWrap.style.gridColumn = "1 / -1";
@@ -782,14 +690,13 @@ document.addEventListener('DOMContentLoaded', function(){
     const detailsGrid = document.createElement("div");
     detailsGrid.className = "setDetailsGrid";
     detailsGrid.style.display = "grid";
-    detailsGrid.style.gridTemplateColumns = "1fr 1fr 1fr";
+    detailsGrid.style.gridTemplateColumns = "70px 1fr 1fr";
     detailsGrid.style.gap = "8px";
     detailsGrid.style.marginTop = "10px";
 
-    // header row
     const h1 = document.createElement("div"); h1.className="setHdr"; h1.style.color="var(--muted)"; h1.style.fontSize="12px"; h1.textContent="Set";
-    const h2 = document.createElement("div"); h2.className="wtHdr"; h2.style.color="var(--muted)"; h2.style.fontSize="12px"; h2.textContent="Weight (lb)";
-    const h3 = document.createElement("div"); h3.className="repsHdr"; h3.style.color="var(--muted)"; h3.style.fontSize="12px"; h3.textContent="Reps";
+    const h2 = document.createElement("div"); h2.className="wtHdr";  h2.style.color="var(--muted)"; h2.style.fontSize="12px"; h2.textContent="Weight (lb)";
+    const h3 = document.createElement("div"); h3.className="repsHdr";h3.style.color="var(--muted)"; h3.style.fontSize="12px"; h3.textContent="Reps";
     detailsGrid.appendChild(h1); detailsGrid.appendChild(h2); detailsGrid.appendChild(h3);
 
     detailsWrap.appendChild(detailsHdr);
@@ -805,13 +712,12 @@ document.addEventListener('DOMContentLoaded', function(){
           existing[`${s}_${k}`] = inp.value;
         });
       }
-      // remove old rows (keep first 3 header cells)
       while (detailsGrid.children.length > 3) detailsGrid.removeChild(detailsGrid.lastChild);
 
       for (let i=1; i<=targetSets; i++){
         const cSet = document.createElement("div");
         cSet.className = "setCell";
-        cSet.textContent = "Set " + String(i);
+        cSet.textContent = `Set ${i}`;
         cSet.style.padding = "10px 11px";
         cSet.style.border = "1px solid rgba(255,255,255,.12)";
         cSet.style.borderRadius = "14px";
@@ -820,8 +726,8 @@ document.addEventListener('DOMContentLoaded', function(){
         cSet.style.fontSize = "13px";
 
         const w = document.createElement("input");
-        w.type = "number"; w.min="0"; w.step="2.5"; w.placeholder="lbs";
-        w.className = "setWeightInp";
+        w.type="number"; w.min="0"; w.step="2.5"; w.placeholder="lbs";
+        w.className="setWeightInp";
         w.setAttribute("data-set", String(i));
         w.setAttribute("data-kind", "w");
         w.style.width="100%";
@@ -832,8 +738,8 @@ document.addEventListener('DOMContentLoaded', function(){
         w.style.borderRadius="14px";
 
         const r = document.createElement("input");
-        r.type = "number"; r.min="0"; r.step="1"; r.placeholder="reps";
-        r.className = "setRepsInp";
+        r.type="number"; r.min="0"; r.step="1"; r.placeholder="reps";
+        r.className="setRepsInp";
         r.setAttribute("data-set", String(i));
         r.setAttribute("data-kind", "r");
         r.style.width="100%";
@@ -843,7 +749,6 @@ document.addEventListener('DOMContentLoaded', function(){
         r.style.padding="10px 11px";
         r.style.borderRadius="14px";
 
-        // restore if available
         const ew = existing[`${i}_w`];
         const er = existing[`${i}_r`];
         if (typeof ew !== "undefined") w.value = ew;
@@ -857,9 +762,9 @@ document.addEventListener('DOMContentLoaded', function(){
 
     function fillFromDefaults(){
       const targetSets = parseInt(setsSel.value || "0", 10) || 0;
+      if (!targetSets){ toast("Set sets first"); return; }
       const dw = (wtInp.value || "").trim();
       const dr = (repsSel.value || "").trim();
-      if (!targetSets){ toast("Set sets first"); return; }
       rebuildSetDetails(true);
       Array.from(detailsGrid.querySelectorAll(".setWeightInp")).forEach(inp => { if (dw) inp.value = dw; });
       Array.from(detailsGrid.querySelectorAll(".setRepsInp")).forEach(inp => { if (dr) inp.value = dr; });
@@ -869,35 +774,26 @@ document.addEventListener('DOMContentLoaded', function(){
     function copyDownFromLast(){
       const targetSets = parseInt(setsSel.value || "0", 10) || 0;
       if (targetSets < 2){ toast("Need 2+ sets"); return; }
-
       for (let i=2; i<=targetSets; i++){
         const prevW = detailsGrid.querySelector(`.setWeightInp[data-set="${i-1}"]`);
         const prevR = detailsGrid.querySelector(`.setRepsInp[data-set="${i-1}"]`);
         const curW  = detailsGrid.querySelector(`.setWeightInp[data-set="${i}"]`);
         const curR  = detailsGrid.querySelector(`.setRepsInp[data-set="${i}"]`);
         if (!prevW || !prevR || !curW || !curR) continue;
-
-        // Only copy into empty fields (so you don't overwrite)
         if (!curW.value && prevW.value) curW.value = prevW.value;
         if (!curR.value && prevR.value) curR.value = prevR.value;
       }
       toast("Copied down");
     }
 
-    copyDownBtn.addEventListener("click", () => copyDownFromLast());
-
-
     toggleDetailsBtn.addEventListener("click", () => {
       const on = detailsWrap.style.display !== "none";
       detailsWrap.style.display = on ? "none" : "block";
       if (!on) rebuildSetDetails(true);
     });
-
     fillBtn.addEventListener("click", () => fillFromDefaults());
-
-    setsSel.addEventListener("change", () => {
-      if (detailsWrap.style.display !== "none") rebuildSetDetails(true);
-    });
+    copyDownBtn.addEventListener("click", () => copyDownFromLast());
+    setsSel.addEventListener("change", () => { if (detailsWrap.style.display !== "none") rebuildSetDetails(true); });
 
 // Rest options in seconds
   const restOptions = ["45","60","90","120","150","180","240"];
@@ -906,67 +802,17 @@ document.addEventListener('DOMContentLoaded', function(){
   // Light:    primary 1x (2 sets, 12 reps, 90s) + aux 2x (2 sets, 15 reps, 60s)
   // Moderate: primary 2x (3 sets, 8 reps, 150s) + aux 3x (3 sets, 12 reps, 90s)
   // Intense:  primary 2x (3 sets, 6 reps, 180s) + aux 4x (3 sets, 10 reps, 90s)
-  const DEFAULT_TEMPLATES = {
-    // Light:    1 primary (2×12, 90s) + 2 aux (2×15, 60s)
-    // Moderate: 2 primary (3×8, 150s) + 3 aux (3×12, 90s)
-    // Intense:  2 primary (3×6, 180s) + 4 aux (3×10, 90s)
+  const templates = {
     light:    { pCount: 1, aCount: 2, pSets: 2, pReps: 12, pRest: 90,  aSets: 2, aReps: 15, aRest: 60 },
     moderate: { pCount: 2, aCount: 3, pSets: 3, pReps: 8,  pRest: 150, aSets: 3, aReps: 12, aRest: 90 },
     intense:  { pCount: 2, aCount: 4, pSets: 3, pReps: 6,  pRest: 180, aSets: 3, aReps: 10, aRest: 90 }
   };
 
-  const TEMPLATES_KEY = "workout_templates_v1";
-
-  function clampInt(v, min, max, fallback){
-    const n = parseInt(String(v), 10);
-    if (Number.isFinite(n)){
-      return Math.max(min, Math.min(max, n));
-    }
-    return fallback;
-  }
-
-  function loadTemplates(){
-    try{
-      const raw = localStorage.getItem(TEMPLATES_KEY);
-      const obj = JSON.parse(raw || "null");
-      if (!obj || typeof obj !== "object") return sClone(DEFAULT_TEMPLATES);
-      // Normalize
-      const out = sClone(DEFAULT_TEMPLATES);
-      for (const k of ["light","moderate","intense"]){
-        if (!obj[k]) continue;
-        out[k] = {
-          pCount: clampInt(obj[k].pCount, 1, 6, out[k].pCount),
-          aCount: clampInt(obj[k].aCount, 0, 8, out[k].aCount),
-          pSets:  clampInt(obj[k].pSets, 1, 6, out[k].pSets),
-          pReps:  clampInt(obj[k].pReps, 1, 30, out[k].pReps),
-          pRest:  clampInt(obj[k].pRest, 15, 600, out[k].pRest),
-          aSets:  clampInt(obj[k].aSets, 1, 6, out[k].aSets),
-          aReps:  clampInt(obj[k].aReps, 1, 30, out[k].aReps),
-          aRest:  clampInt(obj[k].aRest, 15, 600, out[k].aRest)
-        };
-      }
-      return out;
-    }catch(e){
-      return sClone(DEFAULT_TEMPLATES);
-    }
-  }
-
-  function saveTemplates(obj){
-    localStorage.setItem(TEMPLATES_KEY, JSON.stringify(obj));
-  }
-
-  // Active templates (editable)
-  let templates = loadTemplates();
-// ----------------------------
+  // ----------------------------
   // DOM helpers
   // ----------------------------
   const $ = (id) => document.getElementById(id);
-
-  const on = (id, evt, fn) => {
-    const el = $(id);
-    if (!el) { try{ window.__showWorkoutLogError && window.__showWorkoutLogError("Missing element: #" + id); }catch(e){}; return; }
-    el.addEventListener(evt, fn);
-  };
+  const on = (id, evt, fn) => { const el=$(id); if(!el) return; el.addEventListener(evt, fn); };
 
   const toast = (msg) => {
     const t = $("toast");
@@ -994,198 +840,6 @@ document.addEventListener('DOMContentLoaded', function(){
     options.forEach(v => datalistEl.appendChild(makeOption(v)));
   };
 
-  // Favorites (per user)
-  const FAVS_KEY = "workout_favs_v1";
-  let showFavsOnly = false;
-
-  function loadFavs(){
-    try{
-      const raw = localStorage.getItem(FAVS_KEY);
-      const obj = JSON.parse(raw || "{}");
-      return (obj && typeof obj === "object") ? obj : {};
-    }catch(e){
-      return {};
-    }
-  }
-
-  function saveFavs(obj){
-    localStorage.setItem(FAVS_KEY, JSON.stringify(obj));
-  }
-
-  function getActiveUser(){
-    const u = ($("userName")?.value || "").trim() || "Default";
-    return u;
-  }
-
-  function getUserFavs(user){
-    const all = loadFavs();
-    if (!all[user]) all[user] = { primary:{}, aux:{} };
-    if (!all[user].primary) all[user].primary = {};
-    if (!all[user].aux) all[user].aux = {};
-    return all[user];
-  }
-
-  function isFavPrimary(user, group, exercise){
-    const favs = getUserFavs(user);
-    const arr = favs.primary[group] || [];
-    return arr.includes(exercise);
-  }
-
-  function isFavAux(user, group, exercise){
-    const favs = getUserFavs(user);
-    const arr = favs.aux[group] || [];
-    return arr.includes(exercise);
-  }
-
-  function toggleFavPrimary(user, group, exercise){
-    const all = loadFavs();
-    if (!all[user]) all[user] = { primary:{}, aux:{} };
-    all[user].primary = all[user].primary || {};
-    const arr = all[user].primary[group] ? all[user].primary[group].slice() : [];
-    const idx = arr.indexOf(exercise);
-    if (idx >= 0) arr.splice(idx,1); else arr.push(exercise);
-    all[user].primary[group] = arr;
-    saveFavs(all);
-  }
-
-  function toggleFavAux(user, group, exercise){
-    const all = loadFavs();
-    if (!all[user]) all[user] = { primary:{}, aux:{} };
-    all[user].aux = all[user].aux || {};
-    const arr = all[user].aux[group] ? all[user].aux[group].slice() : [];
-    const idx = arr.indexOf(exercise);
-    if (idx >= 0) arr.splice(idx,1); else arr.push(exercise);
-    all[user].aux[group] = arr;
-    saveFavs(all);
-  }
-
-  function sortWithFavs(list, favsArr){
-    const favSet = new Set(favsArr || []);
-    const favs = [];
-    const rest = [];
-    (list || []).forEach(x => (favSet.has(x) ? favs : rest).push(x));
-    return showFavsOnly ? favs : favs.concat(rest);
-  }
-
-
-  // Stats / PRs / Settings
-  const PR_KEY = "workout_prs_v1";
-  const SETTINGS_KEY = "workout_user_settings_v1";
-  const UI_KEY = "workout_ui_v1";
-
-  function loadObj(key, fallback){
-    try{
-      const raw = localStorage.getItem(key);
-      const obj = JSON.parse(raw || "null");
-      return (obj && typeof obj === "object") ? obj : fallback;
-    }catch(e){ return fallback; }
-  }
-  function saveObj(key, obj){ localStorage.setItem(key, JSON.stringify(obj)); }
-
-  function getUserSettings(user){
-    const all = loadObj(SETTINGS_KEY, {});
-    if (!all[user]){
-      all[user] = {
-        goal: "Hypertrophy",
-        equipment: "Full gym",
-        prefRepLow: 6,
-        prefRepHigh: 12
-      };
-      saveObj(SETTINGS_KEY, all);
-    }
-    return all[user];
-  }
-
-  function setUserSettings(user, settings){
-    const all = loadObj(SETTINGS_KEY, {});
-    all[user] = settings;
-    saveObj(SETTINGS_KEY, all);
-  }
-
-  function calcE1RM(weight, reps){
-    const w = parseFloat(weight || "0");
-    const r = parseInt(reps || "0", 10);
-    if (!w || !r) return 0;
-    // Epley
-    return w * (1 + r/30);
-  }
-
-  function updatePRsFromWorkout(item){
-    const all = loadObj(PR_KEY, {});
-    const user = (item.userName || "Default").trim() || "Default";
-    if (!all[user]) all[user] = {};
-
-    const updates = [];
-
-    const check = (row) => {
-      const ex = (row.exercise || "").trim();
-      if (!ex) return;
-
-      // Prefer per-set details if present
-      const sets = Array.isArray(row.setDetails) && row.setDetails.length ? row.setDetails : null;
-
-      const candidates = [];
-      if (sets){
-        sets.forEach(s => {
-          const w = parseFloat(s.weight || "0");
-          const r = parseInt(s.reps || "0", 10);
-          if (w && r) candidates.push({ w, r });
-        });
-      } else {
-        const w = parseFloat(row.weight || "0");
-        const r = parseInt(row.reps || "0", 10);
-        if (w && r) candidates.push({ w, r });
-      }
-
-      if (!candidates.length) return;
-
-      // Choose best e1RM candidate for PR evaluation, but also track best top weight.
-      let best = candidates[0];
-      let bestE1 = calcE1RM(best.w, best.r);
-      candidates.forEach(c => {
-        const e = calcE1RM(c.w, c.r);
-        if (e > bestE1){
-          bestE1 = e;
-          best = c;
-        }
-      });
-
-      const w = best.w;
-      const r = best.r;
-      const e1 = bestE1;
-      const cur = all[user][ex] || { bestE1RM: 0, bestWeight: 0, bestRepsAtBestWeight: 0 };
-
-      let changed = false;
-
-      if (e1 > (cur.bestE1RM || 0)){
-        cur.bestE1RM = e1;
-        changed = true;
-      }
-
-      // best top weight, with tie-breaker by reps
-      if (w > (cur.bestWeight || 0)){
-        cur.bestWeight = w;
-        cur.bestRepsAtBestWeight = r;
-        changed = true;
-      } else if (w === (cur.bestWeight || 0) && r > (cur.bestRepsAtBestWeight || 0)){
-        cur.bestRepsAtBestWeight = r;
-        changed = true;
-      }
-
-      if (changed){
-        all[user][ex] = cur;
-        updates.push(ex);
-      }
-    };
-
-    (item.primary || []).forEach(check);
-    (item.aux || []).forEach(check);
-
-    saveObj(PR_KEY, all);
-    return updates;
-  }
-
-
   const fmtRest = (sec) => {
     const s = Number(sec || 0);
     if (!s) return "";
@@ -1208,7 +862,7 @@ document.addEventListener('DOMContentLoaded', function(){
   // ----------------------------
   // Row builders
   // ----------------------------
-  function createExerciseRow({kind, groupValue, exerciseValue, setsValue, repsValue, restValue, weightValue}){
+  function createExerciseRow({kind, groupValue, exerciseValue, setsValue, repsValue, restValue, weightValue, setDetailsValue}){
     const row = document.createElement("div");
     row.className = `row ${kind === "primary" ? "primary" : "aux"}`;
     row.dataset.kind = kind;
@@ -1261,7 +915,6 @@ document.addEventListener('DOMContentLoaded', function(){
     favBtn.style.marginTop = "8px";
     favBtn.textContent = "☆ Favorite";
     exWrap.appendChild(favBtn);
-
     exWrap.appendChild(exList);
 // Sets
     const setsWrap = document.createElement("div");
@@ -1313,7 +966,6 @@ document.addEventListener('DOMContentLoaded', function(){
       row.appendChild(wtWrap);
       row.appendChild(restWrap);
       row.appendChild(removeBtn);
-      row.appendChild(detailsWrap);
     } else {
       row.appendChild(exWrap);
       row.appendChild(setsWrap);
@@ -1337,14 +989,13 @@ document.addEventListener('DOMContentLoaded', function(){
 
     const refreshExercises = () => {
       const list = getExerciseList();
-      // Apply favorites ordering / filtering
-      const user = getActiveUser();
+      const user = activeUser();
       if (kind === "primary"){
-        const favArr = (getUserFavs(user).primary[$("primaryGroup").value] || []);
+        const favArr = getFavArrPrimary(user, $("primaryGroup").value);
         fillDataList(exList, sortWithFavs(list, favArr));
       } else {
         const g = groupSel ? groupSel.value : "";
-        const favArr = (getUserFavs(user).aux[g] || []);
+        const favArr = getFavArrAux(user, g);
         fillDataList(exList, sortWithFavs(list, favArr));
       }
 
@@ -1356,40 +1007,44 @@ document.addEventListener('DOMContentLoaded', function(){
 
     refreshExercises();
 
-    // Favorite button behavior
-    const updateFavBtnLabel = () => {
-      const user = getActiveUser();
-      const ex = (exInput.value || "").trim();
+    const updateFavBtn = () => {
+      const user = activeUser();
+      const ex = (exInput.value||"").trim();
       if (!ex){ favBtn.textContent = "☆ Favorite"; return; }
       if (kind === "primary"){
-        const g = $("primaryGroup").value;
-        favBtn.textContent = isFavPrimary(user, g, ex) ? "★ Favorited" : "☆ Favorite";
+        const arr = getFavArrPrimary(user, $("primaryGroup").value);
+        favBtn.textContent = arr.includes(ex) ? "★ Favorited" : "☆ Favorite";
       } else {
         const g = groupSel ? groupSel.value : "";
-        favBtn.textContent = isFavAux(user, g, ex) ? "★ Favorited" : "☆ Favorite";
+        const arr = getFavArrAux(user, g);
+        favBtn.textContent = arr.includes(ex) ? "★ Favorited" : "☆ Favorite";
       }
     };
 
     favBtn.addEventListener("click", () => {
-      const user = getActiveUser();
-      const ex = (exInput.value || "").trim();
+      const user = activeUser();
+      const ex = (exInput.value||"").trim();
       if (!ex){ toast("Pick an exercise first"); return; }
       if (kind === "primary"){
         const g = $("primaryGroup").value;
-        toggleFavPrimary(user, g, ex);
+        const arr = getFavArrPrimary(user, g).slice();
+        const i = arr.indexOf(ex);
+        if (i>=0) arr.splice(i,1); else arr.push(ex);
+        setFavArrPrimary(user, g, arr);
       } else {
         const g = groupSel ? groupSel.value : "";
-        toggleFavAux(user, g, ex);
+        const arr = getFavArrAux(user, g).slice();
+        const i = arr.indexOf(ex);
+        if (i>=0) arr.splice(i,1); else arr.push(ex);
+        setFavArrAux(user, g, arr);
       }
-      updateFavBtnLabel();
+      updateFavBtn();
       refreshExercises();
       toast("Updated favorites");
     });
 
-    exInput.addEventListener("change", updateFavBtnLabel);
-    exInput.addEventListener("keyup", updateFavBtnLabel);
-    if (groupSel) groupSel.addEventListener("change", updateFavBtnLabel);
-    updateFavBtnLabel();
+    exInput.addEventListener("change", updateFavBtn);
+    updateFavBtn();
 
     // For aux: changing group updates exercises
     if (groupSel){
@@ -1409,8 +1064,18 @@ document.addEventListener('DOMContentLoaded', function(){
     if (restValue) restSel.value = String(restValue);
     else restSel.value = (kind === "primary") ? "150" : "90";
 
-    if (typeof weightValue !== 'undefined' && weightValue !== null && weightValue !== '') wtInp.value = String(weightValue);
+    if (weightValue !== undefined && weightValue !== null && weightValue !== "") wtInp.value = String(weightValue);
 
+    if (Array.isArray(setDetailsValue) && setDetailsValue.length){
+      detailsWrap.style.display = "block";
+      rebuildSetDetails(false);
+      setDetailsValue.forEach(s => {
+        const wi = detailsGrid.querySelector(`.setWeightInp[data-set="${s.set}"]`);
+        const ri = detailsGrid.querySelector(`.setRepsInp[data-set="${s.set}"]`);
+        if (wi) wi.value = s.weight || "";
+        if (ri) ri.value = s.reps || "";
+      });
+    }
 
     return row;
   }
@@ -1439,24 +1104,41 @@ document.addEventListener('DOMContentLoaded', function(){
   // ----------------------------
   function applyTemplate(mode){
     if (mode === "manual") return;
-
     const plan = templates[mode];
     if (!plan) return;
 
-    // Clear existing
     $("primaryContainer").innerHTML = "";
     $("auxContainer").innerHTML = "";
 
-    const primaryGroup = $("primaryGroup").value;
-    const primaryList = primaryGroups[primaryGroup] ?? [];
+    const pg = $("primaryGroup").value;
+    const primaryList = primaryGroups[pg] || [];
+    const pickN = (arr,n) => arr.slice(0,n);
 
-    // Simple deterministic pick helper (no randomness, stable results)
-    const pickN = (arr, n, start=0) => {
-      const out = [];
-      if (!arr.length) return out;
-      for (let i=0; i<n; i++){
-        out.push(arr[(start + i) % arr.length]);
-      }
+    // Primary
+    const prim = pickN(primaryList, plan.pCount);
+    for (let i=0; i<plan.pCount; i++){
+      addPrimaryRow({ setsValue: plan.pSets, repsValue: plan.pReps, restValue: plan.pRest, exerciseValue: prim[i] || "" });
+    }
+
+    // Aux group recommendations
+    const auxPlanByPrimary = {
+      "Chest": ["Triceps","Shoulders","Abs","Rear Delts","Forearms"],
+      "Back": ["Biceps","Rear Delts","Abs","Upper Back / Traps","Forearms"],
+      "Legs": ["Quads","Hamstrings","Calves","Abs","Forearms"],
+      "Shoulders": ["Rear Delts","Triceps","Abs","Upper Back / Traps","Biceps"],
+      "Arms": ["Biceps","Triceps","Forearms","Abs","Rear Delts"]
+    };
+    const auxOrder = auxPlanByPrimary[pg] || Object.keys(auxGroups);
+
+    for (let i=0; i<plan.aCount; i++){
+      const g = auxOrder[i % auxOrder.length];
+      const exList = auxGroups[g] || [];
+      const ex = exList[i % exList.length] || "";
+      addAuxRow({ groupValue: g, setsValue: plan.aSets, repsValue: plan.aReps, restValue: plan.aRest, exerciseValue: ex });
+    }
+
+    toast(`Auto-filled: ${mode}`);
+  }
       return out;
     };
 
@@ -1517,125 +1199,10 @@ document.addEventListener('DOMContentLoaded', function(){
           const ri = row.querySelector(`.setRepsInp[data-set="${s}"]`);
           return { set: parseInt(s,10), weight: wi.value || "", reps: (ri ? (ri.value||"") : "") };
         }).filter(x => (x.weight || x.reps))
-
       };
       if (kind === "aux"){
         obj.group = row.querySelector(".auxGroupSel")?.value || "";
       }
-
-
-  // ----------------------------
-  // Share via link (no backend)
-  // ----------------------------
-  function base64UrlEncode(str){
-    const b64 = btoa(unescape(encodeURIComponent(str)));
-    return b64.replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
-  }
-
-  function base64UrlDecode(b64url){
-    let b64 = b64url.replace(/-/g, "+").replace(/_/g, "/");
-    while (b64.length % 4) b64 += "=";
-    const str = decodeURIComponent(escape(atob(b64)));
-    return str;
-  }
-
-  function getCurrentWorkoutDraft(){
-    const date = $("workoutDate").value || "";
-    const primary = readRows($("primaryContainer"), "primary");
-    const aux = readRows($("auxContainer"), "aux");
-    const draft = {
-      date,
-      userName: ($("userName").value || "").trim() || "Default",      primaryGroup: $("primaryGroup").value,
-      intensity: $("intensity").value,
-      intensityLabel: {
-        manual:"Manual",
-        light:"Light",
-        moderate:"Moderate",
-        intense:"Intense"
-      }[$("intensity").value] || "Manual",
-      notes: ($("notes").value || "").trim(),
-      primary,
-      aux
-    };
-    return draft;
-  }
-
-  function openShareModal(link){
-    $("shareLink").value = link;
-    $("shareModal").style.display = "block";
-  }
-
-  function closeShareModal(){
-    $("shareModal").style.display = "none";
-  }
-
-  on("shareBtn", "click", () => {
-    const draft = getCurrentWorkoutDraft();
-    if (!draft.primary.length){
-      toast("Add at least 1 primary exercise");
-      return;
-    }
-    const payload = base64UrlEncode(JSON.stringify(draft));
-    const link = `${location.origin}${location.pathname}#w=${payload}`;
-    openShareModal(link);
-    toast("Share link ready");
-  });
-
-  on("closeShareBtn", "click", () => closeShareModal());
-
-  on("copyShareBtn", "click", async () => {
-    try{
-      await navigator.clipboard.writeText($("shareLink").value || "");
-      toast("Copied");
-    }catch(e){
-      toast("Copy blocked (browser permission)");
-    }
-  });
-
-  on("shareModal", "click", (e) => {
-    if (e.target === $("shareModal")) closeShareModal();
-  });
-
-  function importSharedWorkoutFromHash(){
-    const h = location.hash || "";
-    if (!h.startsWith("#w=")) return;
-    const token = h.slice(3);
-    try{
-      const json = base64UrlDecode(token);
-      const draft = JSON.parse(json);
-
-      if (draft.date) $("workoutDate").value = draft.date;
-      if (draft.userName) $("userName").value = draft.userName;      if (draft.primaryGroup) $("primaryGroup").value = draft.primaryGroup;
-      $("intensity").value = "manual";
-      $("notes").value = draft.notes || "";
-
-      $("primaryContainer").innerHTML = "";
-      $("auxContainer").innerHTML = "";
-
-      (draft.primary || []).forEach(x => addPrimaryRow({
-        exerciseValue: x.exercise,
-        setsValue: x.sets,
-        repsValue: x.reps,
-        restValue: x.restSec,
-        weightValue: x.weight
-      }));
-
-      (draft.aux || []).forEach(x => addAuxRow({
-        groupValue: x.group,
-        exerciseValue: x.exercise,
-        setsValue: x.sets,
-        repsValue: x.reps,
-        restValue: x.restSec,
-        weightValue: x.weight
-      }));
-
-      updateCounts();
-      history.replaceState(null, document.title, location.pathname + location.search);
-      toast("Shared workout loaded");
-    }catch(e){
-      toast("Bad share link");
-    }
-  }
       return obj;
     }).filter(x => x.exercise);
   }
@@ -1655,96 +1222,15 @@ document.addEventListener('DOMContentLoaded', function(){
   }
 
   function workoutSummary(item){
-    const p = item.primary.map(x => `${x.exercise}${x.weight ? " @ " + x.weight + "lb" : ""} (${x.sets}×${x.reps}, rest ${fmtRest(x.restSec)})`);
-    const a = item.aux.map(x => `${x.group}: ${x.exercise}${x.weight ? " @ " + x.weight + "lb" : ""} (${x.sets}×${x.reps}, rest ${fmtRest(x.restSec)})`);
+    const p = item.primary.map(x => `${x.exercise} (${x.sets}×${x.reps}, rest ${fmtRest(x.restSec)})`);
+    const a = item.aux.map(x => `${x.group}: ${x.exercise} (${x.sets}×${x.reps}, rest ${fmtRest(x.restSec)})`);
     return {p, a};
   }
 
   // ----------------------------
   // Log UI
   // ----------------------------
-  
-  function startOfWeekISO(d){
-    // Monday start
-    const x = new Date(d);
-    const day = (x.getDay() + 6) % 7; // Mon=0
-    x.setHours(0,0,0,0);
-    x.setDate(x.getDate() - day);
-    return x;
-  }
-
-  function parseDateYMD(ymd){
-    const [y,m,dd] = String(ymd||"").split("-").map(v=>parseInt(v,10));
-    if (!y || !m || !dd) return null;
-    const d = new Date(y, m-1, dd);
-    d.setHours(0,0,0,0);
-    return d;
-  }
-
-  function computeUserDashboard(user){
-    const items = loadLog().filter(x => ((x.userName||"Default").trim()||"Default") === user);
-    const now = new Date();
-    const sow = startOfWeekISO(now).getTime();
-    const thisWeek = items.filter(x => {
-      const d = parseDateYMD(x.date);
-      return d && d.getTime() >= sow;
-    });
-
-    // sessions this week
-    const sessions = thisWeek.length;
-
-    // sets by primaryGroup this week
-    const setsByGroup = {};
-    thisWeek.forEach(w => {
-      const g = w.primaryGroup || "Unknown";
-      const totalSets = (w.primary||[]).reduce((a,r)=>a + (parseInt(r.sets||"0",10)||0),0)
-                      + (w.aux||[]).reduce((a,r)=>a + (parseInt(r.sets||"0",10)||0),0);
-      setsByGroup[g] = (setsByGroup[g] || 0) + totalSets;
-    });
-
-    // streak: consecutive days with at least one session
-    const days = Array.from(new Set(items.map(x => x.date).filter(Boolean))).sort();
-    let streak = 0;
-    if (days.length){
-      // walk backwards from today
-      let cur = new Date(); cur.setHours(0,0,0,0);
-      const set = new Set(days);
-      while (set.has(cur.toISOString().slice(0,10))){
-        streak += 1;
-        cur.setDate(cur.getDate() - 1);
-      }
-    }
-
-    return {sessions, setsByGroup, streak};
-  }
-
-  function renderDashboard(){
-    const user = ($("logUserFilter") && $("logUserFilter").value !== "__all__") ? $("logUserFilter").value : getActiveUser();
-    const d = computeUserDashboard(user);
-    const ul = $("dashList");
-    const meta = $("dashMeta");
-    if (!ul || !meta) return;
-
-    meta.textContent = `${user} • This week`;
-    ul.innerHTML = "";
-
-    const li1 = document.createElement("li");
-    li1.textContent = `Sessions this week: ${d.sessions}`;
-    ul.appendChild(li1);
-
-    const li2 = document.createElement("li");
-    li2.textContent = `Current streak: ${d.streak} day(s)`;
-    ul.appendChild(li2);
-
-    const groups = Object.keys(d.setsByGroup).sort((a,b)=>d.setsByGroup[b]-d.setsByGroup[a]);
-    if (groups.length){
-      const li3 = document.createElement("li");
-      li3.textContent = `Sets by focus (this week): ` + groups.slice(0,4).map(g=>`${g} ${d.setsByGroup[g]}`).join(" • ");
-      ul.appendChild(li3);
-    }
-  }
-
-function renderLog(){
+  function renderLog(){
     const list = $("logList");
     const items = loadLog();
 
@@ -1783,7 +1269,7 @@ if (!shownItems.length){
       h3.textContent = `${item.date} — ${item.primaryGroup}`;
       const meta = document.createElement("div");
       meta.className = "meta";
-      meta.textContent = `${item.userName || "Default"} • ${item.intensityLabel}${item.prUpdates && item.prUpdates.length ? " • PR: " + item.prUpdates.slice(0,2).join(", ") : ""}${item.notes ? " • Notes included" : ""}`;
+      meta.textContent = `${item.userName || "Default"} • ${item.intensityLabel}${item.notes ? " • Notes included" : ""}`;
 
       left.appendChild(h3);
       left.appendChild(meta);
@@ -1851,7 +1337,6 @@ if (!shownItems.length){
 
       list.appendChild(div);
     });
-    renderDashboard();
   }
 
   function loadWorkoutToForm(item){
@@ -1860,6 +1345,7 @@ if (!shownItems.length){
     $("primaryGroup").value = item.primaryGroup;
     $("notes").value = item.notes || "";
     $("userName").value = item.userName || "Default";
+    
     $("primaryContainer").innerHTML = "";
     $("auxContainer").innerHTML = "";
 
@@ -1868,32 +1354,9 @@ if (!shownItems.length){
       setsValue: x.sets,
       repsValue: x.reps,
       restValue: x.restSec,
-      weightValue: x.weight
+      weightValue: x.weight,
+      setDetailsValue: x.setDetails
     }));
-
-    // Restore per-set details if present
-    try{
-      const row = $("primaryContainer").lastElementChild;
-      if (row && Array.isArray(x.setDetails) && x.setDetails.length){
-        const details = row.querySelector('.setDetailsWrap');
-        const toggle = row.querySelector('button.btn');
-        // open details
-        if (details) details.style.display = 'block';
-        // trigger rebuild
-        const setsSel = row.querySelector('.setsSel');
-        if (setsSel){
-          const evt = new Event('change');
-          setsSel.dispatchEvent(evt);
-        }
-        x.setDetails.forEach(s => {
-          const wi = row.querySelector(`.setWeightInp[data-set="${s.set}"]`);
-          const ri = row.querySelector(`.setRepsInp[data-set="${s.set}"]`);
-          if (wi) wi.value = s.weight || '';
-          if (ri) ri.value = s.reps || '';
-        });
-      }
-    }catch(e){}
-
 
     item.aux.forEach(x => addAuxRow({
       groupValue: x.group,
@@ -1901,40 +1364,191 @@ if (!shownItems.length){
       setsValue: x.sets,
       repsValue: x.reps,
       restValue: x.restSec,
-      weightValue: x.weight
+      weightValue: x.weight,
+      setDetailsValue: x.setDetails
     }));
-
-    // Restore per-set details if present
-    try{
-      const row = $("auxContainer").lastElementChild;
-      if (row && Array.isArray(x.setDetails) && x.setDetails.length){
-        const details = row.querySelector('.setDetailsWrap');
-        if (details) details.style.display = 'block';
-        const setsSel = row.querySelector('.setsSel');
-        if (setsSel){
-          const evt = new Event('change');
-          setsSel.dispatchEvent(evt);
-        }
-        x.setDetails.forEach(s => {
-          const wi = row.querySelector(`.setWeightInp[data-set="${s.set}"]`);
-          const ri = row.querySelector(`.setRepsInp[data-set="${s.set}"]`);
-          if (wi) wi.value = s.weight || '';
-          if (ri) ri.value = s.reps || '';
-        });
-      }
-    }catch(e){}
-
 
     updateCounts();
   }
 
   // ----------------------------
+  // Templates (editable)
+  // ----------------------------
+  const DEFAULT_TEMPLATES = {
+    light:    { pCount: 1, aCount: 2, pSets: 2, pReps: 12, pRest: 90,  aSets: 2, aReps: 15, aRest: 60 },
+    moderate: { pCount: 2, aCount: 3, pSets: 3, pReps: 8,  pRest: 150, aSets: 3, aReps: 12, aRest: 90 },
+    intense:  { pCount: 2, aCount: 4, pSets: 3, pReps: 6,  pRest: 180, aSets: 3, aReps: 10, aRest: 90 }
+  };
+  const TEMPLATES_KEY = "workout_templates_rebuild1";
+
+  const clone = (obj) => JSON.parse(JSON.stringify(obj));
+  const clampInt = (v, min, max, fb) => {
+    const n = parseInt(String(v),10);
+    return Number.isFinite(n) ? Math.max(min, Math.min(max, n)) : fb;
+  };
+
+  function loadTemplates(){
+    try{
+      const raw = localStorage.getItem(TEMPLATES_KEY);
+      const obj = JSON.parse(raw || "null");
+      if (!obj) return clone(DEFAULT_TEMPLATES);
+      const out = clone(DEFAULT_TEMPLATES);
+      ["light","moderate","intense"].forEach(k => {
+        if (!obj[k]) return;
+        out[k] = {
+          pCount: clampInt(obj[k].pCount, 1, 6, out[k].pCount),
+          aCount: clampInt(obj[k].aCount, 0, 8, out[k].aCount),
+          pSets:  clampInt(obj[k].pSets, 1, 6, out[k].pSets),
+          pReps:  clampInt(obj[k].pReps, 1, 30, out[k].pReps),
+          pRest:  clampInt(obj[k].pRest, 15, 600, out[k].pRest),
+          aSets:  clampInt(obj[k].aSets, 1, 6, out[k].aSets),
+          aReps:  clampInt(obj[k].aReps, 1, 30, out[k].aReps),
+          aRest:  clampInt(obj[k].aRest, 15, 600, out[k].aRest)
+        };
+      });
+      return out;
+    }catch(e){ return clone(DEFAULT_TEMPLATES); }
+  }
+  function saveTemplates(t){ localStorage.setItem(TEMPLATES_KEY, JSON.stringify(t)); }
+
+  let templates = loadTemplates();
+
+  function renderTemplatesEditor(){
+    const host = $("templatesEditor");
+    if (!host) return;
+    host.innerHTML = "";
+    const makeCard = (key,label) => {
+      const t = templates[key];
+      const div = document.createElement("div");
+      div.className = "logItem";
+      div.style.marginBottom = "12px";
+      div.innerHTML = `
+        <div class="top">
+          <div>
+            <h3 style="margin:0;">${label}</h3>
+            <div class="meta">Primary ${t.pCount} • Aux ${t.aCount} • P ${t.pSets}×${t.pReps} @ ${fmtRest(t.pRest)} • A ${t.aSets}×${t.aReps} @ ${fmtRest(t.aRest)}</div>
+          </div>
+        </div>
+        <div class="grid2" style="margin-top:12px;">
+          <div><label>Primary count</label><input type="number" id="${key}_pCount" min="1" max="6" value="${t.pCount}"></div>
+          <div><label>Aux count</label><input type="number" id="${key}_aCount" min="0" max="8" value="${t.aCount}"></div>
+          <div><label>Primary sets</label><input type="number" id="${key}_pSets" min="1" max="6" value="${t.pSets}"></div>
+          <div><label>Primary reps</label><input type="number" id="${key}_pReps" min="1" max="30" value="${t.pReps}"></div>
+          <div><label>Primary rest (sec)</label><input type="number" id="${key}_pRest" min="15" max="600" value="${t.pRest}"></div>
+          <div><label>Aux sets</label><input type="number" id="${key}_aSets" min="1" max="6" value="${t.aSets}"></div>
+          <div><label>Aux reps</label><input type="number" id="${key}_aReps" min="1" max="30" value="${t.aReps}"></div>
+          <div><label>Aux rest (sec)</label><input type="number" id="${key}_aRest" min="15" max="600" value="${t.aRest}"></div>
+        </div>
+      `;
+      return div;
+    };
+    host.appendChild(makeCard("light","Light"));
+    host.appendChild(makeCard("moderate","Moderate"));
+    host.appendChild(makeCard("intense","Intense"));
+  }
+
+  function openModal(id){ const el=$(id); if(el) el.style.display="block"; }
+  function closeModal(id){ const el=$(id); if(el) el.style.display="none"; }
+
+  // ----------------------------
+  // Favorites (per user)
+  // ----------------------------
+  const FAVS_KEY = "workout_favs_rebuild1";
+  let showFavsOnly = false;
+
+  function loadFavs(){ try{ return JSON.parse(localStorage.getItem(FAVS_KEY)||"{}") || {}; }catch(e){ return {}; } }
+  function saveFavs(o){ localStorage.setItem(FAVS_KEY, JSON.stringify(o)); }
+
+  function activeUser(){ return (($("userName")?.value)||"").trim() || "Default"; }
+
+  function getFavArrPrimary(user, group){
+    const all=loadFavs(); if(!all[user]) all[user]={primary:{},aux:{}}; if(!all[user].primary[group]) all[user].primary[group]=[];
+    return all[user].primary[group];
+  }
+  function getFavArrAux(user, group){
+    const all=loadFavs(); if(!all[user]) all[user]={primary:{},aux:{}}; if(!all[user].aux[group]) all[user].aux[group]=[];
+    return all[user].aux[group];
+  }
+  function setFavArrPrimary(user, group, arr){
+    const all=loadFavs(); if(!all[user]) all[user]={primary:{},aux:{}}; all[user].primary[group]=arr; saveFavs(all);
+  }
+  function setFavArrAux(user, group, arr){
+    const all=loadFavs(); if(!all[user]) all[user]={primary:{},aux:{}}; all[user].aux[group]=arr; saveFavs(all);
+  }
+  function sortWithFavs(list, favArr){
+    const favSet=new Set(favArr||[]);
+    const fav=[], rest=[];
+    (list||[]).forEach(x => (favSet.has(x)?fav:rest).push(x));
+    return showFavsOnly ? fav : fav.concat(rest);
+  }
+
+  // ----------------------------
+  // Profile settings
+  // ----------------------------
+  const SETTINGS_KEY = "workout_settings_rebuild1";
+  function loadSettings(){ return JSON.parse(localStorage.getItem(SETTINGS_KEY)||"{}") || {}; }
+  function saveSettings(o){ localStorage.setItem(SETTINGS_KEY, JSON.stringify(o)); }
+  function getUserSettings(user){
+    const all=loadSettings();
+    if(!all[user]){ all[user]={goal:"Hypertrophy",equipment:"Full gym",prefRepLow:6,prefRepHigh:12}; saveSettings(all); }
+    return all[user];
+  }
+  function setUserSettings(user, s){ const all=loadSettings(); all[user]=s; saveSettings(all); }
+
+  // ----------------------------
+  // Share via link
+  // ----------------------------
+  function b64uEnc(str){
+    const b64 = btoa(unescape(encodeURIComponent(str)));
+    return b64.replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/g,"");
+  }
+  function b64uDec(b64u){
+    let b64=b64u.replace(/-/g,"+").replace(/_/g,"/");
+    while(b64.length%4) b64+="=";
+    return decodeURIComponent(escape(atob(b64)));
+  }
+  function getDraft(){
+    return {
+      date: $("workoutDate").value || "",
+      userName: activeUser(),
+      primaryGroup: $("primaryGroup").value,
+      intensity: $("intensity").value,
+      notes: ($("notes").value||"").trim(),
+      primary: readRows($("primaryContainer"), "primary"),
+      aux: readRows($("auxContainer"), "aux")
+    };
+  }
+  function loadDraft(d){
+    if(d.date) $("workoutDate").value=d.date;
+    if(d.userName) $("userName").value=d.userName;
+    if(d.primaryGroup) $("primaryGroup").value=d.primaryGroup;
+    $("intensity").value="manual";
+    $("notes").value=d.notes||"";
+    $("primaryContainer").innerHTML="";
+    $("auxContainer").innerHTML="";
+    (d.primary||[]).forEach(x => addPrimaryRow({exerciseValue:x.exercise,setsValue:x.sets,repsValue:x.reps,restValue:x.restSec,weightValue:x.weight,setDetailsValue:x.setDetails}));
+    (d.aux||[]).forEach(x => addAuxRow({groupValue:x.group,exerciseValue:x.exercise,setsValue:x.sets,repsValue:x.reps,restValue:x.restSec,weightValue:x.weight,setDetailsValue:x.setDetails}));
+    updateCounts();
+  }
+  function importFromHash(){
+    const h=location.hash||"";
+    if(!h.startsWith("#w=")) return;
+    try{
+      const d=JSON.parse(b64uDec(h.slice(3)));
+      loadDraft(d);
+      history.replaceState(null, document.title, location.pathname+location.search);
+      toast("Shared workout loaded");
+    }catch(e){ toast("Bad share link"); }
+  }
+
+
+  // ----------------------------
   // Events
   // ----------------------------
-  on("addPrimaryBtn", "click", () => addPrimaryRow());
-  on("addAuxBtn", "click", () => addAuxRow());
+  $("addPrimaryBtn").addEventListener("click", () => addPrimaryRow());
+  $("addAuxBtn").addEventListener("click", () => addAuxRow());
 
-  on("primaryGroup", "change", () => {
+  $("primaryGroup").addEventListener("change", () => {
     // When primary group changes, refresh all primary exercise datalists
     Array.from($("primaryContainer").children).forEach(row => {
       const exInput = row.querySelector(".exerciseInput");
@@ -1942,49 +1556,37 @@ if (!shownItems.length){
       if (!exInput || !exList) return;
 
       const list = primaryGroups[$("primaryGroup").value] ?? [];
-      // Apply favorites ordering / filtering
-      const user = getActiveUser();
+      const user = activeUser();
       if (kind === "primary"){
-        const favArr = (getUserFavs(user).primary[$("primaryGroup").value] || []);
+        const favArr = getFavArrPrimary(user, $("primaryGroup").value);
         fillDataList(exList, sortWithFavs(list, favArr));
       } else {
         const g = groupSel ? groupSel.value : "";
-        const favArr = (getUserFavs(user).aux[g] || []);
+        const favArr = getFavArrAux(user, g);
         fillDataList(exList, sortWithFavs(list, favArr));
       }
 
       // If current value no longer matches, clear it so user re-selects
       if (exInput.value && !list.includes(exInput.value)) exInput.value = "";
     });
-  
-    // Rotation memory tip (based on recent history)
-    try{
-      const user = getActiveUser();
-      const g = $("primaryGroup").value;
-      const recent = loadLog().filter(x => ((x.userName||"Default").trim()||"Default")===user && x.primaryGroup===g).slice(-3);
-      const firsts = recent.map(w => ((w.primary||[])[0]||{}).exercise).filter(Boolean);
-      if (firsts.length === 3 && firsts.every(x => x === firsts[0])){
-        toast("Rotation tip: consider swapping your main lift");
-      }
-    }catch(e){}
   });
 
-  on("intensity", "change", (e) => {
+  $("intensity").addEventListener("change", (e) => {
     applyTemplate(e.target.value);
     updateCounts();
   });
 
-  on("resetBtn", "click", () => {
+  $("resetBtn").addEventListener("click", () => {
     $("intensity").value = "manual";
     $("notes").value = "";
     $("primaryContainer").innerHTML = "";
     $("auxContainer").innerHTML = "";
-    if ($("primaryContainer").children.length === 0) addPrimaryRow();
+    addPrimaryRow();
     updateCounts();
     toast("Reset");
   });
 
-  on("saveBtn", "click", () => {
+  $("saveBtn").addEventListener("click", () => {
     const date = $("workoutDate").value;
     if (!date){
       toast("Pick a date first");
@@ -2018,64 +1620,33 @@ if (!shownItems.length){
       createdAt: new Date().toISOString()
     };
 
-    const prUpdates = updatePRsFromWorkout(item);
-    item.prUpdates = prUpdates;
-
     const items = loadLog();
     items.push(item);
     try{ localStorage.setItem(USER_DEFAULT_KEY, item.userName); }catch(e){ /* ignore */ }
     saveLog(items);
     renderLog();
     toast("Saved to log");
-    // Progressive overload suggestion (simple)
-    try{
-      const user = item.userName;
-      const prev = loadLog().filter(x => x.userName === user).slice(-2, -1)[0];
-      if (prev){
-        const suggestions = [];
-        const prevMap = new Map((prev.primary||[]).concat(prev.aux||[]).map(r => [r.exercise, r]));
-        (item.primary||[]).concat(item.aux||[]).forEach(r => {
-          const p = prevMap.get(r.exercise);
-          const w = parseFloat(r.weight||"0");
-          const pr = parseInt(r.reps||"0",10)||0;
-          if (w && pr){
-            if (p && parseFloat(p.weight||"0") === w && pr >= (parseInt(p.reps||"0",10)||0)){
-              suggestions.push(`${r.exercise}: try +5 lb next time`);
-            }
-          }
-        });
-        if (suggestions.length){
-          toast("Progression tip available");
-          // store in notes box for visibility
-          const n = $("notes");
-          if (n && !n.value.includes("Progression tip")){
-            n.value = (n.value ? n.value + "\n\n" : "") + "Progression tip:\n- " + suggestions.slice(0,3).join("\n- ");
-          }
-        }
-      }
-    }catch(e){ /* ignore */ }
-
   });
 
-  on("clearBtn", "click", () => {
+  $("clearBtn").addEventListener("click", () => {
     if (!confirm("Clear ALL saved workouts from this browser?")) return;
     localStorage.removeItem(STORAGE_KEY);
     renderLog();
     toast("Cleared");
   });
 
-  on("exportBtn", "click", () => {
+  $("exportBtn").addEventListener("click", () => {
     const items = loadLog();
     $("exportText").value = JSON.stringify(items, null, 2);
     $("exportBox").style.display = "block";
     toast("Export ready");
   });
 
-  on("hideExportBtn", "click", () => {
+  $("hideExportBtn").addEventListener("click", () => {
     $("exportBox").style.display = "none";
   });
 
-  on("copyExportBtn", "click", async () => {
+  $("copyExportBtn").addEventListener("click", async () => {
     try{
       await navigator.clipboard.writeText($("exportText").value || "");
       toast("Copied");
@@ -2084,228 +1655,15 @@ if (!shownItems.length){
     }
   });
   // User filter events
-  on("logUserFilter", "change", () => {
+  $("logUserFilter").addEventListener("change", () => {
     renderLog();
     toast("Filtered");
   });
 
-  on("clearUserFilterBtn", "click", () => {
+  $("clearUserFilterBtn").addEventListener("click", () => {
     $("logUserFilter").value = "__all__";
     renderLog();
     toast("All users");
-  });
-
-  // ----------------------------
-  // Template editor UI
-  // ----------------------------
-  function renderTemplatesEditor(){
-    const host = $("templatesEditor");
-    if (!host) return;
-
-    const cardFor = (key, label) => {
-      const t = templates[key];
-
-      const wrap = document.createElement("div");
-      wrap.className = "logItem";
-      wrap.style.marginBottom = "12px";
-
-      const head = document.createElement("div");
-      head.className = "top";
-
-      const left = document.createElement("div");
-      const h3 = document.createElement("h3");
-      h3.textContent = label;
-      const meta = document.createElement("div");
-      meta.className = "meta";
-      meta.textContent = `Primary ${t.pCount} • Aux ${t.aCount} • P ${t.pSets}×${t.pReps} @ ${fmtRest(t.pRest)} • A ${t.aSets}×${t.aReps} @ ${fmtRest(t.aRest)}`;
-      left.appendChild(h3);
-      left.appendChild(meta);
-
-      head.appendChild(left);
-      wrap.appendChild(head);
-
-      const grid = document.createElement("div");
-      grid.className = "grid2";
-      grid.style.marginTop = "12px";
-
-      const field = (id, lab, val, min, max, hint) => {
-        const d = document.createElement("div");
-        const l = document.createElement("label");
-        l.setAttribute("for", id);
-        l.textContent = lab;
-        const inp = document.createElement("input");
-        inp.type = "number";
-        inp.id = id;
-        inp.min = String(min);
-        inp.max = String(max);
-        inp.step = "1";
-        inp.value = String(val);
-        inp.style.width = "100%";
-        inp.style.background = "rgba(0,0,0,.24)";
-        inp.style.color = "var(--text)";
-        inp.style.border = "1px solid rgba(255,255,255,.12)";
-        inp.style.padding = "10px 11px";
-        inp.style.borderRadius = "14px";
-        if (hint){
-          const p = document.createElement("div");
-          p.className = "hint";
-          p.style.marginTop = "6px";
-          p.textContent = hint;
-          d.appendChild(l);
-          d.appendChild(inp);
-          d.appendChild(p);
-        }else{
-          d.appendChild(l);
-          d.appendChild(inp);
-        }
-        return d;
-      };
-
-      grid.appendChild(field(`${key}_pCount`, "Primary exercises (count)", t.pCount, 1, 6, ""));
-      grid.appendChild(field(`${key}_aCount`, "Aux exercises (count)", t.aCount, 0, 8, ""));
-      grid.appendChild(field(`${key}_pSets`, "Primary sets", t.pSets, 1, 6, ""));
-      grid.appendChild(field(`${key}_pReps`, "Primary reps", t.pReps, 1, 30, ""));
-      grid.appendChild(field(`${key}_pRest`, "Primary rest (sec)", t.pRest, 15, 600, "Common: 90–180 sec"));
-      grid.appendChild(field(`${key}_aSets`, "Aux sets", t.aSets, 1, 6, ""));
-      grid.appendChild(field(`${key}_aReps`, "Aux reps", t.aReps, 1, 30, ""));
-      grid.appendChild(field(`${key}_aRest`, "Aux rest (sec)", t.aRest, 15, 600, "Common: 45–120 sec"));
-
-      wrap.appendChild(grid);
-      return wrap;
-    };
-
-    host.innerHTML = "";
-    host.appendChild(cardFor("light", "Light"));
-    host.appendChild(cardFor("moderate", "Moderate"));
-    host.appendChild(cardFor("intense", "Intense"));
-  }
-
-  function openTemplatesModal(){
-    renderTemplatesEditor();
-    $("templatesModal").style.display = "block";
-  }
-
-  function closeTemplatesModal(){
-    $("templatesModal").style.display = "none";
-  }
-
-  function readTemplatesFromEditor(){
-    const readOne = (key) => ({
-      pCount: clampInt($(key+"_pCount").value, 1, 6, templates[key].pCount),
-      aCount: clampInt($(key+"_aCount").value, 0, 8, templates[key].aCount),
-      pSets:  clampInt($(key+"_pSets").value, 1, 6, templates[key].pSets),
-      pReps:  clampInt($(key+"_pReps").value, 1, 30, templates[key].pReps),
-      pRest:  clampInt($(key+"_pRest").value, 15, 600, templates[key].pRest),
-      aSets:  clampInt($(key+"_aSets").value, 1, 6, templates[key].aSets),
-      aReps:  clampInt($(key+"_aReps").value, 1, 30, templates[key].aReps),
-      aRest:  clampInt($(key+"_aRest").value, 15, 600, templates[key].aRest)
-    });
-
-    return {
-      light: readOne("light"),
-      moderate: readOne("moderate"),
-      intense: readOne("intense")
-    };
-  }
-
-  on("editTemplatesBtn", "click", () => {
-    openTemplatesModal();
-    toast("Edit templates");
-  });
-
-  on("closeTemplatesBtn", "click", () => closeTemplatesModal());
-
-  on("saveTemplatesBtn", "click", () => {
-    const next = readTemplatesFromEditor();
-    templates = next;
-    saveTemplates(next);
-    closeTemplatesModal();
-    toast("Templates saved");
-  });
-
-  on("resetTemplatesBtn", "click", () => {
-    templates = sClone(DEFAULT_TEMPLATES);
-    saveTemplates(templates);
-    toast("Templates reset");
-  });
-
-  on("addTemplateNoteBtn", "click", () => {
-    const n = $("templateNote");
-    n.style.display = (n.style.display === "none") ? "block" : "none";
-  });
-
-  // Close modal on background click
-  on("templatesModal", "click", (e) => {
-    if (e.target === $("templatesModal")) closeTemplatesModal();
-  });
-
-  on("toggleFavsBtn", "click", () => {
-    showFavsOnly = !showFavsOnly;
-    $("toggleFavsBtn").textContent = showFavsOnly ? "⭐ Favorites (only)" : "⭐ Favorites";
-
-    // Refresh all existing row datalists to reflect filtering/order
-    Array.from($("primaryContainer").children).forEach(row => {
-      const dl = row.querySelector("datalist");
-      if (!dl) return;
-      const list = primaryGroups[$("primaryGroup").value] ?? [];
-      const favArr = (getUserFavs(getActiveUser()).primary[$("primaryGroup").value] || []);
-      fillDataList(dl, sortWithFavs(list, favArr));
-    });
-
-    Array.from($("auxContainer").children).forEach(row => {
-      const dl = row.querySelector("datalist");
-      const gSel = row.querySelector(".auxGroupSel");
-      if (!dl || !gSel) return;
-      const list = auxGroups[gSel.value] ?? [];
-      const favArr = (getUserFavs(getActiveUser()).aux[gSel.value] || []);
-      fillDataList(dl, sortWithFavs(list, favArr));
-    });
-
-    toast(showFavsOnly ? "Favorites only" : "Favorites + all");
-  });
-
-  // ----------------------------
-  // Profile + Performance Mode
-  // ----------------------------
-  function openProfile(){
-    const user = getActiveUser();
-    const s = getUserSettings(user);
-    $("profileGoal").value = s.goal || "Hypertrophy";
-    $("profileEquipment").value = s.equipment || "Full gym";
-    $("profileRepLow").value = s.prefRepLow ?? 6;
-    $("profileRepHigh").value = s.prefRepHigh ?? 12;
-    $("profileModal").style.display = "block";
-  }
-  function closeProfile(){ $("profileModal").style.display = "none"; }
-
-  on("profileBtn", "click", () => { openProfile(); toast("Profile"); });
-  on("closeProfileBtn", "click", () => closeProfile());
-  on("saveProfileBtn", "click", () => {
-    const user = getActiveUser();
-    const next = {
-      goal: $("profileGoal").value,
-      equipment: $("profileEquipment").value,
-      prefRepLow: clampInt($("profileRepLow").value, 1, 30, 6),
-      prefRepHigh: clampInt($("profileRepHigh").value, 1, 30, 12)
-    };
-    if (next.prefRepHigh < next.prefRepLow) next.prefRepHigh = next.prefRepLow;
-    setUserSettings(user, next);
-    closeProfile();
-    toast("Profile saved");
-  });
-  on("profileModal", "click", (e) => { if (e.target === $("profileModal")) closeProfile(); });
-
-  function setPerfMode(on){
-    document.body.classList.toggle("perf", !!on);
-    const ui = loadObj(UI_KEY, {});
-    ui.perf = !!on;
-    saveObj(UI_KEY, ui);
-  }
-
-  on("perfModeBtn", "click", () => {
-    const on = !document.body.classList.contains("perf");
-    setPerfMode(on);
-    toast(on ? "Performance mode" : "Normal mode");
   });
 
 
@@ -2313,6 +1671,7 @@ if (!shownItems.length){
   // Init
   // ----------------------------
   initGroupSelects();
+  importFromHash();
 
   // Set date default to today (local)
   const today = new Date();
@@ -2328,19 +1687,141 @@ if (!shownItems.length){
     else $("userName").value = "Default";
   }catch(e){ $("userName").value = "Default"; }
   
-  // Import shared workout if link contains one
-  importSharedWorkoutFromHash();
-
   // Start with one primary row
-  if ($("primaryContainer").children.length === 0) addPrimaryRow();
+  addPrimaryRow();
   updateCounts();
   renderLog();
 
-})();
+});
+
+
+  function sampleUnique(arr, n){
+    const a=(arr||[]).slice();
+    for (let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; }
+    return a.slice(0, Math.min(n,a.length));
+  }
+
+  function buildRandomWorkout(){
+    const plan = templates["moderate"];
+    $("intensity").value="manual";
+    $("primaryContainer").innerHTML="";
+    $("auxContainer").innerHTML="";
+
+    const pg=$("primaryGroup").value;
+    const primPick = sampleUnique(primaryGroups[pg]||[], plan.pCount);
+
+    for (let i=0;i<plan.pCount;i++){
+      addPrimaryRow({setsValue:plan.pSets,repsValue:plan.pReps,restValue:plan.pRest,exerciseValue:primPick[i]||""});
+    }
+
+    const auxPlanByPrimary = {
+      "Chest": ["Triceps","Shoulders","Abs","Rear Delts","Forearms"],
+      "Back": ["Biceps","Rear Delts","Abs","Upper Back / Traps","Forearms"],
+      "Legs": ["Quads","Hamstrings","Calves","Abs","Forearms"],
+      "Shoulders": ["Rear Delts","Triceps","Abs","Upper Back / Traps","Biceps"],
+      "Arms": ["Biceps","Triceps","Forearms","Abs","Rear Delts"]
+    };
+    const auxOrder = auxPlanByPrimary[pg] || Object.keys(auxGroups);
+
+    for (let i=0;i<plan.aCount;i++){
+      const g = auxOrder[i % auxOrder.length];
+      const ex = sampleUnique(auxGroups[g]||[],1)[0] || "";
+      addAuxRow({groupValue:g,setsValue:plan.aSets,repsValue:plan.aReps,restValue:plan.aRest,exerciseValue:ex});
+    }
+
+    updateCounts();
+    toast("Random workout created");
+  }
+
+  // Event wiring (safe)
+  on("randomWorkoutBtn","click", () => buildRandomWorkout());
+  on("toggleFavsBtn","click", () => {
+    showFavsOnly = !showFavsOnly;
+    const b = $("toggleFavsBtn");
+    if (b) b.textContent = showFavsOnly ? "⭐ Favorites (only)" : "⭐ Favorites";
+    // Refresh lists for current rows
+    Array.from($("primaryContainer").children).forEach(row => {
+      const dl=row.querySelector("datalist");
+      if(!dl) return;
+      const list = primaryGroups[$("primaryGroup").value] || [];
+      const favArr = getFavArrPrimary(activeUser(), $("primaryGroup").value);
+      fillDataList(dl, sortWithFavs(list, favArr));
+    });
+    Array.from($("auxContainer").children).forEach(row => {
+      const dl=row.querySelector("datalist");
+      const gSel=row.querySelector(".auxGroupSel");
+      if(!dl || !gSel) return;
+      const list = auxGroups[gSel.value] || [];
+      const favArr = getFavArrAux(activeUser(), gSel.value);
+      fillDataList(dl, sortWithFavs(list, favArr));
+    });
+    toast(showFavsOnly ? "Favorites only" : "Favorites + all");
+  });
+
+  // Templates modal handlers
+  on("editTemplatesBtn","click", () => { renderTemplatesEditor(); openModal("templatesModal"); });
+  on("closeTemplatesBtn","click", () => closeModal("templatesModal"));
+  on("saveTemplatesBtn","click", () => {
+    const read = (k) => ({
+      pCount: clampInt($(k+"_pCount").value, 1, 6, templates[k].pCount),
+      aCount: clampInt($(k+"_aCount").value, 0, 8, templates[k].aCount),
+      pSets:  clampInt($(k+"_pSets").value, 1, 6, templates[k].pSets),
+      pReps:  clampInt($(k+"_pReps").value, 1, 30, templates[k].pReps),
+      pRest:  clampInt($(k+"_pRest").value, 15, 600, templates[k].pRest),
+      aSets:  clampInt($(k+"_aSets").value, 1, 6, templates[k].aSets),
+      aReps:  clampInt($(k+"_aReps").value, 1, 30, templates[k].aReps),
+      aRest:  clampInt($(k+"_aRest").value, 15, 600, templates[k].aRest)
+    });
+    templates = { light: read("light"), moderate: read("moderate"), intense: read("intense") };
+    saveTemplates(templates);
+    closeModal("templatesModal");
+    toast("Templates saved");
+  });
+  on("resetTemplatesBtn","click", () => { templates = clone(DEFAULT_TEMPLATES); saveTemplates(templates); toast("Templates reset"); });
+
+  // Profile handlers
+  on("profileBtn","click", () => {
+    const u=activeUser();
+    const s=getUserSettings(u);
+    $("profileGoal").value=s.goal || "Hypertrophy";
+    $("profileEquipment").value=s.equipment || "Full gym";
+    $("profileRepLow").value=s.prefRepLow ?? 6;
+    $("profileRepHigh").value=s.prefRepHigh ?? 12;
+    openModal("profileModal");
+  });
+  on("closeProfileBtn","click", () => closeModal("profileModal"));
+  on("saveProfileBtn","click", () => {
+    const u=activeUser();
+    const next = {
+      goal: $("profileGoal").value,
+      equipment: $("profileEquipment").value,
+      prefRepLow: clampInt($("profileRepLow").value, 1, 30, 6),
+      prefRepHigh: clampInt($("profileRepHigh").value, 1, 30, 12)
+    };
+    if (next.prefRepHigh < next.prefRepLow) next.prefRepHigh = next.prefRepLow;
+    setUserSettings(u, next);
+    closeModal("profileModal");
+    toast("Profile saved");
+  });
+
+  // Share handlers
+  on("shareBtn","click", () => {
+    const d=getDraft();
+    if (!d.primary || !d.primary.length){ toast("Add at least 1 primary"); return; }
+    const link = `${location.origin}${location.pathname}#w=${b64uEnc(JSON.stringify(d))}`;
+    $("shareLink").value = link;
+    openModal("shareModal");
+  });
+  on("closeShareBtn","click", () => closeModal("shareModal"));
+  on("copyShareBtn","click", async () => {
+    try{ await navigator.clipboard.writeText($("shareLink").value||""); toast("Copied"); }
+    catch(e){ toast("Copy blocked"); }
+  });
+
 </script>
 
   <div id="revFooter" style="position:fixed;left:12px;bottom:10px;z-index:50;font-size:11px;opacity:.55;">
-    Rev v16 • Build 2026-02-24 02:34:41
+    Rev rebuild2 • Build 2026-02-24 02:49:35
   </div>
 
 </body>
