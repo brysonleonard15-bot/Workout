@@ -1,0 +1,1111 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Workout Builder + Log (Static)</title>
+  <style>
+    :root{
+      --bg0:#0b1020;
+      --bg1:#0f1730;
+      --card: rgba(255,255,255,.06);
+      --text:#e9eefc;
+      --muted:#a9b3d1;
+      --line: rgba(255,255,255,.12);
+      --accent:#31f3b0;   /* mint */
+      --accent2:#7aa7ff;  /* soft blue */
+      --danger:#ff5b6e;
+      --shadow: 0 20px 60px rgba(0,0,0,.45);
+      --radius: 18px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+      background:
+        radial-gradient(1000px 500px at 15% 0%, rgba(49,243,176,.12), transparent 50%),
+        radial-gradient(900px 500px at 90% 10%, rgba(122,167,255,.12), transparent 55%),
+        radial-gradient(800px 500px at 50% 100%, rgba(255,91,110,.10), transparent 55%),
+        linear-gradient(180deg, var(--bg0), var(--bg1));
+      color:var(--text);
+      min-height:100vh;
+    }
+    header{
+      padding:28px 18px 18px;
+      max-width:1100px;
+      margin:0 auto;
+    }
+    .brand{display:flex;align-items:center;gap:14px;}
+    .logo{
+      width:44px;height:44px;border-radius:14px;
+      background:
+        radial-gradient(18px 18px at 30% 30%, rgba(49,243,176,.95), rgba(49,243,176,.1)),
+        radial-gradient(20px 20px at 70% 70%, rgba(122,167,255,.95), rgba(122,167,255,.1)),
+        linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.02));
+      border:1px solid rgba(255,255,255,.10);
+      box-shadow: 0 18px 35px rgba(0,0,0,.35);
+      position:relative;
+      overflow:hidden;
+    }
+    .logo:after{
+      content:"";
+      position:absolute; inset:-40%;
+      background:conic-gradient(from 180deg, rgba(49,243,176,.0), rgba(49,243,176,.5), rgba(122,167,255,.5), rgba(49,243,176,.0));
+      animation: spin 8s linear infinite;
+      filter: blur(12px);
+      opacity:.55;
+    }
+    @keyframes spin{to{transform:rotate(360deg)}}
+    h1{font-size:20px;margin:0;letter-spacing:.2px;}
+    .sub{margin:3px 0 0;color:var(--muted);font-size:13px;line-height:1.35;}
+
+    main{
+      max-width:1100px;
+      margin:0 auto;
+      padding:0 18px 38px;
+      display:grid;
+      grid-template-columns: 1.2fr .8fr;
+      gap:16px;
+    }
+    @media (max-width: 980px){ main{grid-template-columns:1fr} }
+
+    .card{
+      background: linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.04));
+      border:1px solid rgba(255,255,255,.10);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .card .hd{
+      padding:14px 16px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(0,0,0,.14);
+    }
+    .card .hd .title{display:flex;flex-direction:column;gap:2px;}
+    .card .hd .title b{font-size:14px;letter-spacing:.2px;}
+    .card .hd .title span{color:var(--muted);font-size:12px;}
+    .card .bd{padding:16px}
+
+    .grid2{
+      display:grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap:12px;
+    }
+    @media (max-width: 540px){ .grid2{grid-template-columns:1fr} }
+
+    label{display:block;font-size:12px;color:var(--muted);margin:0 0 6px;}
+    input, select, button, textarea{font: inherit;}
+    input[type="date"], input[type="text"], select, textarea{
+      width:100%;
+      background: rgba(0,0,0,.24);
+      color:var(--text);
+      border:1px solid rgba(255,255,255,.12);
+      padding:10px 11px;
+      border-radius: 14px;
+      outline:none;
+      transition: transform .05s ease, border-color .15s ease, background .15s ease;
+    }
+    textarea{min-height:84px; resize:vertical}
+    input[type="date"]:focus, input[type="text"]:focus, select:focus, textarea:focus{
+      border-color: rgba(49,243,176,.55);
+      box-shadow: 0 0 0 4px rgba(49,243,176,.12);
+    }
+
+    .row{
+      gap:10px;
+      align-items:end;
+      padding:10px;
+      border-radius: 16px;
+      background: rgba(255,255,255,.03);
+      border:1px solid rgba(255,255,255,.08);
+      margin:10px 0 0;
+      display:grid;
+    }
+    /* Primary rows: Exercise | Sets | Reps | Rest | Remove */
+    .row.primary{grid-template-columns: 1.8fr .8fr .8fr .9fr auto;}
+    /* Aux rows: Aux Group | Exercise | Sets | Reps | Rest | Remove */
+    .row.aux{grid-template-columns: 1.25fr 1.55fr .8fr .8fr .9fr auto;}
+
+    @media (max-width: 780px){
+      .row.primary{grid-template-columns:1fr 1fr; align-items:stretch}
+      .row.aux{grid-template-columns:1fr 1fr; align-items:stretch}
+      .row .removeBtn{grid-column:1/-1}
+    }
+
+    .btn{
+      cursor:pointer;
+      border:1px solid rgba(255,255,255,.14);
+      background: rgba(255,255,255,.06);
+      color:var(--text);
+      padding:10px 12px;
+      border-radius: 14px;
+      transition: transform .05s ease, background .15s ease, border-color .15s ease;
+      user-select:none;
+      white-space:nowrap;
+    }
+    .btn:hover{background: rgba(255,255,255,.09); border-color: rgba(255,255,255,.18)}
+    .btn:active{transform: translateY(1px)}
+    .btnPrimary{
+      border-color: rgba(49,243,176,.35);
+      background: rgba(49,243,176,.12);
+    }
+    .btnPrimary:hover{background: rgba(49,243,176,.16)}
+    .btnDanger{
+      border-color: rgba(255,91,110,.35);
+      background: rgba(255,91,110,.12);
+    }
+    .btnDanger:hover{background: rgba(255,91,110,.16)}
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:6px 10px;
+      border-radius: 999px;
+      border:1px solid rgba(255,255,255,.14);
+      background: rgba(0,0,0,.18);
+      color:var(--muted);
+      font-size:12px;
+    }
+    .dot{width:9px;height:9px;border-radius:99px;background:var(--accent)}
+    .dot2{background:var(--accent2)}
+    .divider{height:1px; background: var(--line); margin:14px 0;}
+    .hint{font-size:12px;color: var(--muted);line-height:1.4;margin:10px 0 0;}
+    .kpi{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px;}
+
+    /* Log list */
+    .logList{display:flex; flex-direction:column; gap:10px}
+    .logItem{
+      padding:12px;
+      border-radius:16px;
+      background: rgba(255,255,255,.04);
+      border:1px solid rgba(255,255,255,.10);
+    }
+    .logItem .top{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;}
+    .logItem h3{margin:0;font-size:14px;letter-spacing:.2px;}
+    .logItem .meta{margin-top:4px;color:var(--muted);font-size:12px;}
+    .logItem ul{margin:10px 0 0;padding-left:18px;color:var(--text);font-size:12.5px;line-height:1.35;}
+    .empty{
+      padding:14px;
+      border:1px dashed rgba(255,255,255,.20);
+      background: rgba(0,0,0,.18);
+      border-radius:16px;
+      color: var(--muted);
+      font-size:12.5px;
+      line-height:1.35;
+    }
+    .toast{
+      position: fixed;
+      left: 50%;
+      bottom: 18px;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,.55);
+      border:1px solid rgba(255,255,255,.16);
+      color: var(--text);
+      padding:10px 12px;
+      border-radius: 999px;
+      box-shadow: var(--shadow);
+      opacity:0;
+      pointer-events:none;
+      transition: opacity .2s ease, transform .2s ease;
+      font-size:12.5px;
+    }
+    .toast.show{opacity:1; transform: translateX(-50%) translateY(-2px)}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <div class="logo" aria-hidden="true"></div>
+      <div>
+        <h1>Workout Builder + Log</h1>
+        <p class="sub">Static HTML (no server). Improved templates: “intensity” changes effort + rest + rep ranges, not just more sets.</p>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <!-- Builder -->
+    <section class="card">
+      <div class="hd">
+        <div class="title">
+          <b>Build today’s workout</b>
+          <span>Pick a primary lift focus, add auxiliaries, then save.</span>
+        </div>
+        <span class="pill"><span class="dot"></span>Local-only storage</span>
+      </div>
+      <div class="bd">
+        <div class="grid2">
+          <div>
+            <label for="workoutDate">Date</label>
+            <input id="workoutDate" type="date" />
+          </div>
+          <div>
+            <label for="intensity">Auto template</label>
+            <select id="intensity">
+              <option value="manual">Manual (no auto-fill)</option>
+              <option value="light">Light — 1 primary (2×10–12, 90s) + 2 aux (2×12–15, 60s)</option>
+              <option value="moderate">Moderate — 2 primary (3×6–10, 120–150s) + 3 aux (3×10–15, 60–90s)</option>
+              <option value="intense">Intense — 2 primary (3×5–8, 150–180s) + 4 aux (3×8–15, 90s)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="grid2">
+          <div>
+            <label for="primaryGroup">Primary workout group</label>
+            <select id="primaryGroup"></select>
+          </div>
+          <div>
+            <label for="notes">Notes (optional)</label>
+            <textarea id="notes" placeholder="Energy level, tempo, PRs, pain notes, etc."></textarea>
+          </div>
+        </div>
+
+        <div class="kpi">
+          <span class="pill"><span class="dot"></span><span id="primaryCountPill">Primary: 0</span></span>
+          <span class="pill"><span class="dot2"></span><span id="auxCountPill">Aux: 0</span></span>
+        </div>
+
+        <h2 style="margin:14px 0 8px; font-size:14px;">Primary exercises</h2>
+        <div id="primaryContainer"></div>
+        <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:10px;">
+          <button type="button" class="btn btnPrimary" id="addPrimaryBtn">+ Add primary exercise</button>
+        </div>
+
+        <div class="divider"></div>
+
+        <h2 style="margin:0 0 8px; font-size:14px;">Auxiliary exercises</h2>
+        <div class="hint">Aux = smaller muscle groups and finishers (biceps, triceps, calves, abs, forearms, rear delts, etc.).</div>
+        <div id="auxContainer"></div>
+        <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:10px;">
+          <button type="button" class="btn" id="addAuxBtn">+ Add auxiliary exercise</button>
+        </div>
+
+        <div class="divider"></div>
+
+        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+          <button type="button" class="btn btnPrimary" id="saveBtn">Save to log</button>
+          <button type="button" class="btn" id="resetBtn">Reset form</button>
+        </div>
+        <div class="hint">Your log is saved in <b>localStorage</b> on this device/browser. Use Export JSON in the Log panel to backup.</div>
+      </div>
+    </section>
+
+    <!-- Log -->
+    <aside class="card">
+      <div class="hd">
+        <div class="title">
+          <b>Your saved log</b>
+          <span>Review, load, delete, or export your workouts.</span>
+        </div>
+        <span class="pill"><span class="dot2"></span>Offline</span>
+      </div>
+      <div class="bd">
+        <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:12px;">
+          <button type="button" class="btn" id="exportBtn">Export JSON</button>
+          <button type="button" class="btn" id="showImportBtn">Import JSON</button>
+          <button type="button" class="btn btnDanger" id="clearBtn">Clear all</button>
+        </div>
+        <div id="exportBox" style="display:none;">
+          <label for="exportText">Exported log JSON (copy/paste to backup)</label>
+          <textarea id="exportText" spellcheck="false"></textarea>
+          <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:10px;">
+            <button type="button" class="btn" id="hideExportBtn">Hide</button>
+            <button type="button" class="btn btnPrimary" id="copyExportBtn">Copy</button>
+          </div>
+          <div class="divider"></div>
+        
+        <div id="importBox" style="display:none;">
+          <label for="importText">Import log JSON (paste exported JSON here)</label>
+          <textarea id="importText" spellcheck="false" placeholder='[ { "id": "...", "date": "YYYY-MM-DD", ... } ]'></textarea>
+          <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:10px;">
+            <button type="button" class="btn" id="hideImportBtn">Hide</button>
+            <button type="button" class="btn btnPrimary" id="importBtn">Import</button>
+            <button type="button" class="btn" id="clearImportBtn">Clear</button>
+          </div>
+          <div class="divider"></div>
+        </div>
+
+        <div id="logList" class="logList"></div>
+      </div>
+    </aside>
+  </main>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function(){
+  // ----------------------------
+  // Data: groups + exercises
+  // ----------------------------
+  const primaryGroups = {
+    "Chest": [
+      "Barbell Bench Press",
+      "Incline Dumbbell Press",
+      "Dumbbell Bench Press",
+      "Weighted Dips",
+      "Machine Chest Press",
+      "Incline Barbell Bench Press",
+      "Cable Fly (High-to-Low)",
+      "Pec Deck / Machine Fly",
+      "Push-Up (Weighted/Slow Tempo)"
+    ],
+    "Back": [
+      "Weighted Pull-Up / Chin-Up",
+      "Barbell Row",
+      "Chest-Supported Row",
+      "Lat Pulldown",
+      "One-Arm Dumbbell Row",
+      "T-Bar Row",
+      "Seated Cable Row",
+      "Deadlift (Technique/Strength)",
+      "Rack Pull"
+    ],
+    "Legs": [
+      "Back Squat",
+      "Front Squat",
+      "Leg Press",
+      "Romanian Deadlift",
+      "Hack Squat",
+      "Bulgarian Split Squat",
+      "Lying Leg Curl",
+      "Leg Extension",
+      "Hip Thrust"
+    ],
+    "Shoulders": [
+      "Overhead Press (Barbell)",
+      "Seated Dumbbell Press",
+      "Machine Shoulder Press",
+      "Arnold Press",
+      "Lateral Raise (Dumbbell)",
+      "Cable Lateral Raise",
+      "Rear Delt Fly (Machine)",
+      "Upright Row (Cable/BB - light)",
+      "Face Pull"
+    ],
+    "Arms": [
+      "Close-Grip Bench Press",
+      "EZ-Bar Curl",
+      "Dumbbell Curl (Alternating)",
+      "Cable Curl",
+      "Skull Crushers (EZ-Bar)",
+      "Triceps Pressdown (Cable)",
+      "Weighted Chin-Up (Biceps emphasis)",
+      "Dip (Triceps emphasis)"
+    ]
+  };
+
+  const auxGroups = {
+    "Biceps": [
+      "Incline Dumbbell Curl",
+      "Hammer Curl",
+      "Preacher Curl (EZ-Bar)",
+      "Cable Curl (Rope/Bar)",
+      "Bayesian Cable Curl"
+    ],
+    "Triceps": [
+      "Overhead Cable Extension",
+      "Rope Pressdown",
+      "Single-Arm Pressdown",
+      "Dumbbell Overhead Extension",
+      "Kickback (light)"
+    ],
+    "Calves": [
+      "Standing Calf Raise",
+      "Seated Calf Raise",
+      "Leg Press Calf Press",
+      "Donkey Calf Raise"
+    ],
+    "Abs": [
+      "Cable Crunch",
+      "Hanging Knee Raise",
+      "Ab Wheel Rollout",
+      "Plank (Timed)",
+      "Dead Bug (Controlled)"
+    ],
+    "Forearms": [
+      "Wrist Curl",
+      "Reverse Wrist Curl",
+      "Farmer Carry (Timed)",
+      "Plate Pinch Hold (Timed)"
+    ],
+    "Rear Delts": [
+      "Face Pull",
+      "Reverse Pec Deck",
+      "Rear Delt Cable Fly",
+      "Bent-Over Rear Delt Raise"
+    ],
+    "Upper Back / Traps": [
+      "Dumbbell Shrug",
+      "Barbell Shrug",
+      "Cable Y-Raise",
+      "Prone Trap Raise"
+    ]
+  };
+
+  const setOptions = ["1","2","3","4","5","6"];
+  // Keep reps dropdown simple but cover the recommended ranges
+  const repOptions = ["5","6","8","10","12","15","20"];
+  // Rest options in seconds
+  const restOptions = ["45","60","90","120","150","180","240"];
+
+  // Template defaults (the “clean upgrade”)
+  // Light:    primary 1x (2 sets, 12 reps, 90s) + aux 2x (2 sets, 15 reps, 60s)
+  // Moderate: primary 2x (3 sets, 8 reps, 150s) + aux 3x (3 sets, 12 reps, 90s)
+  // Intense:  primary 2x (3 sets, 6 reps, 180s) + aux 4x (3 sets, 10 reps, 90s)
+  const templates = {
+    light:    { pCount: 1, aCount: 2, pSets: 2, pReps: 12, pRest: 90,  aSets: 2, aReps: 15, aRest: 60 },
+    moderate: { pCount: 2, aCount: 3, pSets: 3, pReps: 8,  pRest: 150, aSets: 3, aReps: 12, aRest: 90 },
+    intense:  { pCount: 2, aCount: 4, pSets: 3, pReps: 6,  pRest: 180, aSets: 3, aReps: 10, aRest: 90 }
+  };
+
+  // ----------------------------
+  // DOM helpers
+  // ----------------------------
+  const $ = (id) => document.getElementById(id);
+
+  const toast = (msg) => {
+    const t = $("toast");
+    t.textContent = msg;
+    t.classList.add("show");
+    setTimeout(()=>t.classList.remove("show"), 1500);
+  };
+
+  const makeOption = (val, label) => {
+    const o = document.createElement("option");
+    o.value = val;
+    o.textContent = label ?? val;
+    return o;
+  };
+
+  const fillSelect = (select, options, placeholder) => {
+    select.innerHTML = "";
+    if (placeholder) select.appendChild(makeOption("", placeholder));
+    options.forEach(v => select.appendChild(makeOption(v)));
+  };
+
+  // Searchable list helper (for <datalist>)
+  const fillDataList = (datalistEl, options) => {
+    datalistEl.innerHTML = "";
+    options.forEach(v => datalistEl.appendChild(makeOption(v)));
+  };
+
+  const fmtRest = (sec) => {
+    const s = Number(sec || 0);
+    if (!s) return "";
+    if (s < 60) return `${s}s`;
+    if (s % 60 === 0) return `${s/60}m`;
+    const m = Math.floor(s/60);
+    const r = s % 60;
+    return `${m}m ${r}s`;
+  };
+
+  // ----------------------------
+  // Build group dropdowns
+  // ----------------------------
+  function initGroupSelects(){
+    const pg = $("primaryGroup");
+    pg.innerHTML = "";
+    Object.keys(primaryGroups).forEach(g => pg.appendChild(makeOption(g)));
+  }
+
+  // ----------------------------
+  // Row builders
+  // ----------------------------
+  function createExerciseRow({kind, groupValue, exerciseValue, setsValue, repsValue, restValue}){
+    const row = document.createElement("div");
+    row.className = `row ${kind === "primary" ? "primary" : "aux"}`;
+    row.dataset.kind = kind;
+
+    let groupSel = null;
+
+    // For aux, include group dropdown per row
+    if (kind === "aux"){
+      const groupWrap = document.createElement("div");
+      const lab = document.createElement("label");
+      lab.textContent = "Aux group";
+      groupSel = document.createElement("select");
+      groupSel.className = "auxGroupSel";
+
+      groupWrap.appendChild(lab);
+      groupWrap.appendChild(groupSel);
+
+      row.appendChild(groupWrap);
+
+      // Fill aux group options
+      groupSel.innerHTML = "";
+      Object.keys(auxGroups).forEach(g => groupSel.appendChild(makeOption(g)));
+      if (groupValue && auxGroups[groupValue]) groupSel.value = groupValue;
+    }
+
+    // Exercise (searchable: input + datalist)
+    const exWrap = document.createElement("div");
+    const exLab = document.createElement("label");
+    exLab.textContent = (kind === "primary") ? "Exercise" : "Aux exercise";
+
+    const exInput = document.createElement("input");
+    exInput.className = "exerciseInput";
+    exInput.type = "text";
+    exInput.placeholder = "Type to search…";
+
+    // Unique datalist per row
+    const dlId = `dl_${kind}_${Math.random().toString(16).slice(2)}_${Date.now()}`;
+    const exList = document.createElement("datalist");
+    exList.id = dlId;
+    exInput.setAttribute("list", dlId);
+
+    exWrap.appendChild(exLab);
+    exWrap.appendChild(exInput);
+    exWrap.appendChild(exList);
+// Sets
+    const setsWrap = document.createElement("div");
+    const setsLab = document.createElement("label");
+    setsLab.textContent = "Sets";
+    const setsSel = document.createElement("select");
+    setsSel.className = "setsSel";
+    fillSelect(setsSel, setOptions, "");
+    setsWrap.appendChild(setsLab);
+    setsWrap.appendChild(setsSel);
+
+    // Reps
+    const repsWrap = document.createElement("div");
+    const repsLab = document.createElement("label");
+    repsLab.textContent = "Reps";
+    const repsSel = document.createElement("select");
+    repsSel.className = "repsSel";
+    fillSelect(repsSel, repOptions, "");
+    repsWrap.appendChild(repsLab);
+    repsWrap.appendChild(repsSel);
+
+    // Rest
+    const restWrap = document.createElement("div");
+    const restLab = document.createElement("label");
+    restLab.textContent = "Rest";
+    const restSel = document.createElement("select");
+    restSel.className = "restSel";
+    // show as seconds in value, pretty label in text
+    restSel.innerHTML = "";
+    restOptions.forEach(v => restSel.appendChild(makeOption(v, fmtRest(v))));
+    restWrap.appendChild(restLab);
+    restWrap.appendChild(restSel);
+
+    // Remove
+    const removeBtn = document.createElement("button");
+    removeBtn.type = "button";
+    removeBtn.className = "btn btnDanger removeBtn";
+    removeBtn.textContent = "Remove";
+    removeBtn.addEventListener("click", () => {
+      row.remove();
+      updateCounts();
+    });
+
+    // Append in correct order:
+    if (kind === "primary"){
+      row.appendChild(exWrap);
+      row.appendChild(setsWrap);
+      row.appendChild(repsWrap);
+      row.appendChild(restWrap);
+      row.appendChild(removeBtn);
+    } else {
+      row.appendChild(exWrap);
+      row.appendChild(setsWrap);
+      row.appendChild(repsWrap);
+      row.appendChild(restWrap);
+      row.appendChild(removeBtn);
+    }
+
+    // Populate exercise list based on kind
+    const getExerciseList = () => {
+      if (kind === "primary"){
+        const pg = $("primaryGroup").value;
+        return primaryGroups[pg] ?? [];
+      } else {
+        const g = groupSel ? groupSel.value : Object.keys(auxGroups)[0];
+        return auxGroups[g] ?? [];
+      }
+    };
+
+    const refreshExercises = () => {
+      const list = getExerciseList();
+      fillDataList(exList, list);
+
+      // Preserve existing typed value if it matches; otherwise apply preset/default
+      if (exerciseValue && list.includes(exerciseValue)) exInput.value = exerciseValue;
+      else if (exInput.value && list.includes(exInput.value)) { /* keep */ }
+      else exInput.value = "";
+    };
+
+    refreshExercises();
+
+    // For aux: changing group updates exercises
+    if (groupSel){
+      groupSel.addEventListener("change", () => {
+        exerciseValue = ""; // reset
+        refreshExercises();
+      });
+    }
+
+    // Defaults (manual add)
+    if (setsValue) setsSel.value = String(setsValue);
+    else setsSel.value = (kind === "primary") ? "3" : "3";
+
+    if (repsValue) repsSel.value = String(repsValue);
+    else repsSel.value = (kind === "primary") ? "10" : "12";
+
+    if (restValue) restSel.value = String(restValue);
+    else restSel.value = (kind === "primary") ? "150" : "90";
+
+    return row;
+  }
+
+  function addPrimaryRow(preset={}){
+    const c = $("primaryContainer");
+    const row = createExerciseRow({kind:"primary", ...preset});
+    c.appendChild(row);
+    updateCounts();
+  }
+
+  function addAuxRow(preset={}){
+    const c = $("auxContainer");
+    const row = createExerciseRow({kind:"aux", ...preset});
+    c.appendChild(row);
+    updateCounts();
+  }
+
+  function updateCounts(){
+    $("primaryCountPill").textContent = `Primary: ${$("primaryContainer").children.length}`;
+    $("auxCountPill").textContent = `Aux: ${$("auxContainer").children.length}`;
+  }
+
+  // ----------------------------
+  // Auto template behavior
+  // ----------------------------
+  function applyTemplate(mode){
+    if (mode === "manual") return;
+
+    const plan = templates[mode];
+    if (!plan) return;
+
+    // Clear existing
+    $("primaryContainer").innerHTML = "";
+    $("auxContainer").innerHTML = "";
+
+    // Primary rows
+    for (let i=0; i<plan.pCount; i++){
+      addPrimaryRow({ setsValue: plan.pSets, repsValue: plan.pReps, restValue: plan.pRest });
+    }
+    // Aux rows
+    for (let i=0; i<plan.aCount; i++){
+      addAuxRow({ setsValue: plan.aSets, repsValue: plan.aReps, restValue: plan.aRest });
+    }
+
+    toast(`Auto-filled: ${mode}`);
+  }
+
+  // ----------------------------
+  // Serialization
+  // ----------------------------
+  function readRows(containerEl, kind){
+    const rows = Array.from(containerEl.children);
+    return rows.map(row => {
+      const obj = {
+        kind,
+        exercise: (row.querySelector(".exerciseInput")?.value || "").trim(),
+        sets: row.querySelector(".setsSel")?.value || "",
+        reps: row.querySelector(".repsSel")?.value || "",
+        restSec: row.querySelector(".restSel")?.value || ""
+      };
+      if (kind === "aux"){
+        obj.group = row.querySelector(".auxGroupSel")?.value || "";
+      }
+      return obj;
+    }).filter(x => x.exercise);
+  }
+
+  const STORAGE_KEY = "workout_log_v3"; // current schema (searchable inputs + restSec)
+  const LEGACY_KEYS = ["workout_log_v2", "workout_log_v1", "workout_log_v1"]; // v1/v2 possible keys (safe duplicates)
+
+  function normalizeItem(item){
+    // Ensure minimal fields exist; keep backward compatibility
+    const out = Object.assign({}, item);
+    if (!out.id){
+      out.id = (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + "_" + Math.random().toString(16).slice(2));
+    }
+    out.primaryGroup = out.primaryGroup || "Chest";
+    out.intensity = out.intensity || "manual";
+    out.intensityLabel = out.intensityLabel || "Manual";
+    out.notes = out.notes || "";
+    out.primary = Array.isArray(out.primary) ? out.primary : [];
+    out.aux = Array.isArray(out.aux) ? out.aux : [];
+
+    // Normalize exercise rows
+    out.primary = out.primary.map(x => ({
+      kind: "primary",
+      exercise: (x.exercise || "").trim(),
+      sets: String(x.sets || "3"),
+      reps: String(x.reps || "10"),
+      restSec: String(x.restSec || x.rest || "150")
+    })).filter(x => x.exercise);
+
+    out.aux = out.aux.map(x => ({
+      kind: "aux",
+      group: (x.group || x.auxGroup || "Biceps"),
+      exercise: (x.exercise || "").trim(),
+      sets: String(x.sets || "3"),
+      reps: String(x.reps || "12"),
+      restSec: String(x.restSec || x.rest || "90")
+    })).filter(x => x.exercise);
+
+    out.createdAt = out.createdAt || new Date().toISOString();
+    out.date = out.date || "";
+
+    return out;
+  }
+
+  function mergeLogs(existing, incoming){
+    const byId = new Map();
+    existing.forEach(it => { const n = normalizeItem(it); byId.set(n.id, n); });
+    incoming.forEach(it => { const n = normalizeItem(it); byId.set(n.id, n); });
+    // Keep stable-ish order by createdAt then date
+    const merged = Array.from(byId.values());
+    merged.sort((a,b) => String(a.createdAt||"").localeCompare(String(b.createdAt||"")));
+    return merged;
+  }
+
+  function migrateLegacyLogsIfNeeded(){
+    const currentRaw = localStorage.getItem(STORAGE_KEY);
+    let current = [];
+    try{ current = JSON.parse(currentRaw || "[]"); }catch(e){ current = []; }
+
+    // If current already has data, do nothing
+    if (Array.isArray(current) && current.length) return;
+
+    let combined = [];
+    for (const k of LEGACY_KEYS){
+      try{
+        const raw = localStorage.getItem(k);
+        const arr = JSON.parse(raw || "[]");
+        if (Array.isArray(arr) && arr.length){
+          combined = combined.concat(arr);
+        }
+      }catch(e){ /* ignore */ }
+    }
+
+    if (combined.length){
+      const migrated = mergeLogs([], combined);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(migrated));
+      // (We intentionally do NOT delete legacy keys; keeps it safe.)
+      toast("Imported legacy log");
+    }
+  }
+
+  function loadLog(){
+    try{
+      return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+    }catch(e){
+      return [];
+    }
+  }
+
+  function saveLog(items){
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+  }
+
+  function workoutSummary(item){
+    const p = item.primary.map(x => `${x.exercise} (${x.sets}×${x.reps}, rest ${fmtRest(x.restSec)})`);
+    const a = item.aux.map(x => `${x.group}: ${x.exercise} (${x.sets}×${x.reps}, rest ${fmtRest(x.restSec)})`);
+    return {p, a};
+  }
+
+  // ----------------------------
+  // Log UI
+  // ----------------------------
+  function renderLog(){
+    const list = $("logList");
+    const items = loadLog();
+
+    if (!items.length){
+      list.innerHTML = `<div class="empty">No saved workouts yet. Build one on the left, then hit <b>Save to log</b>.</div>`;
+      return;
+    }
+
+    list.innerHTML = "";
+    items.slice().reverse().forEach((item, idxFromEnd) => {
+      const idx = items.length - 1 - idxFromEnd; // real index
+
+      const div = document.createElement("div");
+      div.className = "logItem";
+
+      const top = document.createElement("div");
+      top.className = "top";
+
+      const left = document.createElement("div");
+      const h3 = document.createElement("h3");
+      h3.textContent = `${item.date} — ${item.primaryGroup}`;
+      const meta = document.createElement("div");
+      meta.className = "meta";
+      meta.textContent = `${item.intensityLabel}${item.notes ? " • Notes included" : ""}`;
+
+      left.appendChild(h3);
+      left.appendChild(meta);
+
+      const actions = document.createElement("div");
+      actions.style.display = "flex";
+      actions.style.gap = "8px";
+      actions.style.flexWrap = "wrap";
+      actions.style.justifyContent = "flex-end";
+
+      const loadBtn = document.createElement("button");
+      loadBtn.type = "button";
+      loadBtn.className = "btn";
+      loadBtn.textContent = "Load";
+      loadBtn.addEventListener("click", () => {
+        loadWorkoutToForm(item);
+        toast("Loaded workout");
+      });
+
+      const delBtn = document.createElement("button");
+      delBtn.type = "button";
+      delBtn.className = "btn btnDanger";
+      delBtn.textContent = "Delete";
+      delBtn.addEventListener("click", () => {
+        const items2 = loadLog();
+        items2.splice(idx, 1);
+        saveLog(items2);
+        migrateLegacyLogsIfNeeded();
+  renderLog();
+        toast("Deleted");
+      });
+
+      actions.appendChild(loadBtn);
+      actions.appendChild(delBtn);
+
+      top.appendChild(left);
+      top.appendChild(actions);
+
+      const {p, a} = workoutSummary(item);
+
+      const ul = document.createElement("ul");
+      p.forEach(line => {
+        const li = document.createElement("li");
+        li.textContent = `Primary: ${line}`;
+        ul.appendChild(li);
+      });
+      a.forEach(line => {
+        const li = document.createElement("li");
+        li.textContent = `Aux: ${line}`;
+        ul.appendChild(li);
+      });
+
+      if (item.notes){
+        const li = document.createElement("li");
+        li.textContent = `Notes: ${item.notes}`;
+        ul.appendChild(li);
+      }
+
+      div.appendChild(top);
+      div.appendChild(ul);
+
+      list.appendChild(div);
+    });
+  }
+
+  function loadWorkoutToForm(item){
+    $("workoutDate").value = item.date;
+    $("intensity").value = "manual";
+    $("primaryGroup").value = item.primaryGroup;
+    $("notes").value = item.notes || "";
+
+    $("primaryContainer").innerHTML = "";
+    $("auxContainer").innerHTML = "";
+
+    item.primary.forEach(x => addPrimaryRow({
+      exerciseValue: x.exercise,
+      setsValue: x.sets,
+      repsValue: x.reps,
+      restValue: x.restSec
+    }));
+
+    item.aux.forEach(x => addAuxRow({
+      groupValue: x.group,
+      exerciseValue: x.exercise,
+      setsValue: x.sets,
+      repsValue: x.reps,
+      restValue: x.restSec
+    }));
+
+    updateCounts();
+  }
+
+  // ----------------------------
+  // Events
+  // ----------------------------
+  $("addPrimaryBtn").addEventListener("click", () => addPrimaryRow());
+  $("addAuxBtn").addEventListener("click", () => addAuxRow());
+
+  $("primaryGroup").addEventListener("change", () => {
+    // When primary group changes, refresh all primary exercise datalists
+    Array.from($("primaryContainer").children).forEach(row => {
+      const exInput = row.querySelector(".exerciseInput");
+      const exList = row.querySelector("datalist");
+      if (!exInput || !exList) return;
+
+      const list = primaryGroups[$("primaryGroup").value] ?? [];
+      fillDataList(exList, list);
+
+      // If current value no longer matches, clear it so user re-selects
+      if (exInput.value && !list.includes(exInput.value)) exInput.value = "";
+    });
+  });
+
+  $("intensity").addEventListener("change", (e) => {
+    applyTemplate(e.target.value);
+    updateCounts();
+  });
+
+  $("resetBtn").addEventListener("click", () => {
+    $("intensity").value = "manual";
+    $("notes").value = "";
+    $("primaryContainer").innerHTML = "";
+    $("auxContainer").innerHTML = "";
+    addPrimaryRow();
+    updateCounts();
+    toast("Reset");
+  });
+
+  $("saveBtn").addEventListener("click", () => {
+    const date = $("workoutDate").value;
+    if (!date){
+      toast("Pick a date first");
+      return;
+    }
+
+    const primary = readRows($("primaryContainer"), "primary");
+    if (!primary.length){
+      toast("Add at least 1 primary exercise");
+      return;
+    }
+    const aux = readRows($("auxContainer"), "aux");
+
+    const intensityVal = $("intensity").value;
+    const intensityLabel = {
+      manual:"Manual",
+      light:"Light",
+      moderate:"Moderate",
+      intense:"Intense"
+    }[intensityVal] || "Manual";
+
+    const item = {
+      id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + "_" + Math.random().toString(16).slice(2),
+      date,
+      primaryGroup: $("primaryGroup").value,
+      intensity: intensityVal,
+      intensityLabel,
+      notes: ($("notes").value || "").trim(),
+      primary,
+      aux,
+      createdAt: new Date().toISOString()
+    };
+
+    const items = loadLog();
+    items.push(item);
+    saveLog(items);
+    renderLog();
+    toast("Saved to log");
+  });
+
+  $("clearBtn").addEventListener("click", () => {
+    if (!confirm("Clear ALL saved workouts from this browser?")) return;
+    localStorage.removeItem(STORAGE_KEY);
+    renderLog();
+    toast("Cleared");
+  });
+
+  $("exportBtn").addEventListener("click", () => {
+    const items = loadLog();
+    $("exportText").value = JSON.stringify(items, null, 2);
+    $("exportBox").style.display = "block";
+    $("importBox").style.display = "none";
+    toast("Export ready");
+  });
+
+  $("hideExportBtn").addEventListener("click", () => {
+    $("exportBox").style.display = "none";
+  });
+
+  $("copyExportBtn").addEventListener("click", async () => {
+    try{
+      await navigator.clipboard.writeText($("exportText").value || "");
+      toast("Copied");
+    }catch(e){
+      toast("Copy blocked (browser permission)");
+    }
+  });
+  // Import UI
+  $("showImportBtn").addEventListener("click", () => {
+    $("importBox").style.display = "block";
+    $("exportBox").style.display = "none";
+    toast("Paste JSON to import");
+  });
+
+  $("hideImportBtn").addEventListener("click", () => {
+    $("importBox").style.display = "none";
+  });
+
+  $("clearImportBtn").addEventListener("click", () => {
+    $("importText").value = "";
+    toast("Cleared");
+  });
+
+  $("importBtn").addEventListener("click", () => {
+    const text = ($("importText").value || "").trim();
+    if (!text){
+      toast("Paste JSON first");
+      return;
+    }
+    let incoming;
+    try{
+      incoming = JSON.parse(text);
+    }catch(e){
+      toast("Invalid JSON");
+      return;
+    }
+    if (!Array.isArray(incoming)){
+      toast("JSON must be an array");
+      return;
+    }
+    const existing = loadLog();
+    const merged = mergeLogs(existing, incoming);
+    saveLog(merged);
+    renderLog();
+    toast(`Imported: ${incoming.length}`);
+  });
+
+
+  // ----------------------------
+  // Init
+  // ----------------------------
+  initGroupSelects();
+
+  // Set date default to today (local)
+  const today = new Date();
+  const yyyy = today.getFullYear();
+  const mm = String(today.getMonth()+1).padStart(2,"0");
+  const dd = String(today.getDate()).padStart(2,"0");
+  $("workoutDate").value = `${yyyy}-${mm}-${dd}`;
+
+  // Start with one primary row
+  addPrimaryRow();
+  updateCounts();
+  renderLog();
+
+})();
+</script>
+</body>
+</html>
