@@ -260,11 +260,7 @@
             <label for="userName">User</label>
             <input id="userName" type="text" placeholder="e.g., Bryson" />
           </div>
-          <div>
-            <label for="sessionLabel">Session label (optional)</label>
-            <input id="sessionLabel" type="text" placeholder="e.g., Push A, Pull B, Leg Day" />
-          </div>
-        </div>
+</div>
 
         <div class="divider"></div>
 
@@ -1011,7 +1007,7 @@ if (!shownItems.length){
 
       const left = document.createElement("div");
       const h3 = document.createElement("h3");
-      h3.textContent = `${item.date} — ${item.primaryGroup}${item.sessionLabel ? " • " + item.sessionLabel : ""}`;
+      h3.textContent = `${item.date} — ${item.primaryGroup}`;
       const meta = document.createElement("div");
       meta.className = "meta";
       meta.textContent = `${item.userName || "Default"} • ${item.intensityLabel}${item.notes ? " • Notes included" : ""}`;
@@ -1090,8 +1086,6 @@ if (!shownItems.length){
     $("primaryGroup").value = item.primaryGroup;
     $("notes").value = item.notes || "";
     $("userName").value = item.userName || "Default";
-    $("sessionLabel").value = item.sessionLabel || "";
-
     $("primaryContainer").innerHTML = "";
     $("auxContainer").innerHTML = "";
 
@@ -1179,9 +1173,7 @@ if (!shownItems.length){
       intensity: intensityVal,
       intensityLabel,
       notes: ($("notes").value || "").trim(),
-      userName: ($("userName").value || "").trim() || "Default",
-      sessionLabel: ($("sessionLabel").value || "").trim(),
-      primary,
+      userName: ($("userName").value || "").trim() || "Default",      primary,
       aux,
       createdAt: new Date().toISOString()
     };
@@ -1324,6 +1316,123 @@ if (!shownItems.length){
 
   $("randomWorkoutBtn").addEventListener("click", () => buildRandomWorkout());
 
+  // ----------------------------
+  // Rest timer (tap-to-start)
+  // ----------------------------
+  let restTimerInterval = null;
+  let restRemaining = 0;
+  let restPaused = false;
+
+  function fmtMMSS(sec){
+    sec = Math.max(0, Math.floor(sec));
+    const m = String(Math.floor(sec/60)).padStart(2,"0");
+    const s = String(sec%60).padStart(2,"0");
+    return `${m}:${s}`;
+  }
+
+  function showRestTimer(show){
+    $("restTimer").style.display = show ? "block" : "none";
+  }
+
+  function updateRestTimerUI(){
+    $("restTimerLabel").textContent = `Rest: ${fmtMMSS(restRemaining)}`;
+  }
+
+  function restBeep(){
+    try{
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const o = ctx.createOscillator();
+      const g = ctx.createGain();
+      o.type = "sine";
+      o.frequency.value = 880;
+      g.gain.value = 0.08;
+      o.connect(g); g.connect(ctx.destination);
+      o.start();
+      setTimeout(()=>{ o.stop(); ctx.close(); }, 180);
+    }catch(e){ /* ignore */ }
+  }
+
+  function startRestTimer(seconds){
+    restRemaining = parseInt(seconds || "0", 10) || 0;
+    if (!restRemaining){ toast("No rest selected"); return; }
+    restPaused = false;
+    showRestTimer(true);
+    updateRestTimerUI();
+
+    if (restTimerInterval) clearInterval(restTimerInterval);
+    const startAt = Date.now();
+    let lastTick = startAt;
+
+    restTimerInterval = setInterval(() => {
+      if (restPaused) { lastTick = Date.now(); return; }
+      const now = Date.now();
+      const dt = Math.round((now - lastTick)/1000);
+      if (dt > 0){
+        restRemaining -= dt;
+        lastTick = now;
+        if (restRemaining <= 0){
+          restRemaining = 0;
+          updateRestTimerUI();
+          clearInterval(restTimerInterval);
+          restTimerInterval = null;
+          restBeep();
+          if (navigator.vibrate) try{ navigator.vibrate([120,80,120]); }catch(e){}
+          toast("Rest done");
+          return;
+        }
+        updateRestTimerUI();
+      }
+    }, 250);
+  }
+
+  function stopRestTimer(){
+    if (restTimerInterval) clearInterval(restTimerInterval);
+    restTimerInterval = null;
+    restRemaining = 0;
+    restPaused = false;
+    showRestTimer(false);
+  }
+
+  on("restTimerStopBtn", "click", () => stopRestTimer());
+  on("restTimerPauseBtn", "click", () => {
+    restPaused = !restPaused;
+    $("restTimerPauseBtn").textContent = restPaused ? "Resume" : "Pause";
+  });
+
+  function attachRestTapHandlers(){
+    // Start timer when user taps a rest dropdown
+    const bind = (row) => {
+      const restSel = row.querySelector(".restSel");
+      if (!restSel) return;
+      // avoid double binding
+      if (restSel.dataset.timerBound === "1") return;
+      restSel.dataset.timerBound = "1";
+      restSel.addEventListener("change", () => {
+        // auto-start on change
+        startRestTimer(restSel.value);
+      });
+      // also allow tap/click to start with current value (helpful if already chosen)
+      restSel.addEventListener("click", () => {
+        if (restSel.value) startRestTimer(restSel.value);
+      });
+    };
+
+    Array.from($("primaryContainer").children).forEach(bind);
+    Array.from($("auxContainer").children).forEach(bind);
+  }
+
+  // After adding rows, reattach rest handlers
+  const _addPrimaryRow = addPrimaryRow;
+  addPrimaryRow = function(preset={}){
+    _addPrimaryRow(preset);
+    attachRestTapHandlers();
+  };
+  const _addAuxRow = addAuxRow;
+  addAuxRow = function(preset={}){
+    _addAuxRow(preset);
+    attachRestTapHandlers();
+  };
+
 
   // ----------------------------
   // Init
@@ -1343,8 +1452,6 @@ if (!shownItems.length){
     if (u) $("userName").value = u;
     else $("userName").value = "Default";
   }catch(e){ $("userName").value = "Default"; }
-  $("sessionLabel").value = "";
-
   // Start with one primary row
   addPrimaryRow();
   updateCounts();
@@ -1353,8 +1460,18 @@ if (!shownItems.length){
 })();
 </script>
 
+  
+  <div id="restTimer" style="position:fixed; right:12px; bottom:10px; z-index:60; display:none;">
+    <div class="pill" style="gap:10px; padding:10px 12px; border-radius:999px;">
+      <span class="dot2" style="width:10px;height:10px;border-radius:999px;"></span>
+      <span id="restTimerLabel" style="color:var(--text); font-size:12.5px;">Rest: 00:00</span>
+      <button type="button" class="btn" id="restTimerPauseBtn" style="padding:8px 10px;">Pause</button>
+      <button type="button" class="btn btnDanger" id="restTimerStopBtn" style="padding:8px 10px;">Stop</button>
+    </div>
+  </div>
+
   <div id="revFooter" style="position:fixed;left:12px;bottom:10px;z-index:50;font-size:11px;opacity:.55;">
-    Rev v8 • Build 2026-02-24 01:28:43
+    Rev v11 • Build 2026-02-24 03:17:00
   </div>
 
 </body>
