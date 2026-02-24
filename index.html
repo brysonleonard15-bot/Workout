@@ -309,7 +309,6 @@
       <div class="bd">
         <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:12px;">
           <button type="button" class="btn" id="exportBtn">Export JSON</button>
-          <button type="button" class="btn" id="showImportBtn">Import JSON</button>
           <button type="button" class="btn btnDanger" id="clearBtn">Clear all</button>
         </div>
         <div id="exportBox" style="display:none;">
@@ -318,16 +317,6 @@
           <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:10px;">
             <button type="button" class="btn" id="hideExportBtn">Hide</button>
             <button type="button" class="btn btnPrimary" id="copyExportBtn">Copy</button>
-          </div>
-          <div class="divider"></div>
-        
-        <div id="importBox" style="display:none;">
-          <label for="importText">Import log JSON (paste exported JSON here)</label>
-          <textarea id="importText" spellcheck="false" placeholder='[ { "id": "...", "date": "YYYY-MM-DD", ... } ]'></textarea>
-          <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:10px;">
-            <button type="button" class="btn" id="hideImportBtn">Hide</button>
-            <button type="button" class="btn btnPrimary" id="importBtn">Import</button>
-            <button type="button" class="btn" id="clearImportBtn">Clear</button>
           </div>
           <div class="divider"></div>
         </div>
@@ -347,23 +336,30 @@
   const primaryGroups = {
     "Chest": [
       "Barbell Bench Press",
-      "Incline Dumbbell Press",
+      "Incline Barbell Bench Press",
       "Dumbbell Bench Press",
+      "Incline Dumbbell Press",
+      "Flat Dumbbell Press (Neutral Grip)",
       "Weighted Dips",
       "Machine Chest Press",
-      "Incline Barbell Bench Press",
+      "Smith Machine Bench Press",
       "Cable Fly (High-to-Low)",
+      "Cable Fly (Low-to-High)",
       "Pec Deck / Machine Fly",
+      "Dumbbell Fly (Flat/Incline)",
       "Push-Up (Weighted/Slow Tempo)"
     ],
     "Back": [
       "Weighted Pull-Up / Chin-Up",
-      "Barbell Row",
+      "Lat Pulldown (Wide/Neutral)",
       "Chest-Supported Row",
-      "Lat Pulldown",
-      "One-Arm Dumbbell Row",
-      "T-Bar Row",
       "Seated Cable Row",
+      "One-Arm Dumbbell Row",
+      "Barbell Row",
+      "T-Bar Row",
+      "Machine Row (Plate-Loaded)",
+      "Straight-Arm Pulldown",
+      "Back Extension (Controlled)",
       "Deadlift (Technique/Strength)",
       "Rack Pull"
     ],
@@ -371,33 +367,45 @@
       "Back Squat",
       "Front Squat",
       "Leg Press",
-      "Romanian Deadlift",
       "Hack Squat",
       "Bulgarian Split Squat",
+      "Walking Lunge",
+      "Romanian Deadlift",
+      "Good Morning (Light)",
       "Lying Leg Curl",
+      "Seated Leg Curl",
       "Leg Extension",
-      "Hip Thrust"
+      "Hip Thrust",
+      "Glute Bridge",
+      "Step-Up"
     ],
     "Shoulders": [
       "Overhead Press (Barbell)",
       "Seated Dumbbell Press",
+      "Standing Dumbbell Press",
       "Machine Shoulder Press",
       "Arnold Press",
       "Lateral Raise (Dumbbell)",
       "Cable Lateral Raise",
+      "Machine Lateral Raise",
       "Rear Delt Fly (Machine)",
-      "Upright Row (Cable/BB - light)",
-      "Face Pull"
+      "Rear Delt Cable Fly",
+      "Face Pull",
+      "Upright Row (Cable/BB - light)"
     ],
     "Arms": [
       "Close-Grip Bench Press",
+      "Dip (Triceps emphasis)",
+      "Triceps Pressdown (Cable)",
+      "Overhead Triceps Extension (Cable)",
+      "Skull Crushers (EZ-Bar)",
       "EZ-Bar Curl",
       "Dumbbell Curl (Alternating)",
+      "Incline Dumbbell Curl",
+      "Hammer Curl",
       "Cable Curl",
-      "Skull Crushers (EZ-Bar)",
-      "Triceps Pressdown (Cable)",
       "Weighted Chin-Up (Biceps emphasis)",
-      "Dip (Triceps emphasis)"
+      "Reverse Curl (EZ-Bar)"
     ]
   };
 
@@ -407,45 +415,76 @@
       "Hammer Curl",
       "Preacher Curl (EZ-Bar)",
       "Cable Curl (Rope/Bar)",
-      "Bayesian Cable Curl"
+      "Bayesian Cable Curl",
+      "Concentration Curl",
+      "Spider Curl",
+      "EZ-Bar Reverse Curl"
     ],
     "Triceps": [
       "Overhead Cable Extension",
       "Rope Pressdown",
       "Single-Arm Pressdown",
       "Dumbbell Overhead Extension",
-      "Kickback (light)"
+      "Skull Crushers (Light)",
+      "Cable Kickback",
+      "Close-Grip Push-Up"
     ],
     "Calves": [
       "Standing Calf Raise",
       "Seated Calf Raise",
       "Leg Press Calf Press",
-      "Donkey Calf Raise"
+      "Donkey Calf Raise",
+      "Single-Leg Calf Raise",
+      "Tibialis Raise"
     ],
     "Abs": [
       "Cable Crunch",
       "Hanging Knee Raise",
+      "Hanging Leg Raise",
       "Ab Wheel Rollout",
       "Plank (Timed)",
-      "Dead Bug (Controlled)"
+      "Side Plank (Timed)",
+      "Dead Bug (Controlled)",
+      "Pallof Press"
     ],
     "Forearms": [
       "Wrist Curl",
       "Reverse Wrist Curl",
       "Farmer Carry (Timed)",
-      "Plate Pinch Hold (Timed)"
+      "Plate Pinch Hold (Timed)",
+      "Wrist Roller"
     ],
     "Rear Delts": [
       "Face Pull",
       "Reverse Pec Deck",
       "Rear Delt Cable Fly",
-      "Bent-Over Rear Delt Raise"
+      "Bent-Over Rear Delt Raise",
+      "Chest-Supported Rear Delt Raise"
     ],
     "Upper Back / Traps": [
       "Dumbbell Shrug",
       "Barbell Shrug",
       "Cable Y-Raise",
-      "Prone Trap Raise"
+      "Prone Trap Raise",
+      "Face Pull (High)"
+    ],
+    "Quads": [
+      "Leg Extension",
+      "Hack Squat (Light/Moderate)",
+      "Leg Press (Quad bias)",
+      "Front Squat (Light/Moderate)",
+      "Sissy Squat (Assisted)",
+      "Split Squat (Quad bias)",
+      "Step-Up (Quad bias)"
+    ],
+    "Hamstrings": [
+      "Seated Leg Curl",
+      "Lying Leg Curl",
+      "Romanian Deadlift (Light/Moderate)",
+      "Good Morning (Light)",
+      "Glute-Ham Raise",
+      "Cable Pull-Through",
+      "Single-Leg RDL"
     ]
   };
 
@@ -728,82 +767,7 @@
     }).filter(x => x.exercise);
   }
 
-  const STORAGE_KEY = "workout_log_v3"; // current schema (searchable inputs + restSec)
-  const LEGACY_KEYS = ["workout_log_v2", "workout_log_v1", "workout_log_v1"]; // v1/v2 possible keys (safe duplicates)
-
-  function normalizeItem(item){
-    // Ensure minimal fields exist; keep backward compatibility
-    const out = Object.assign({}, item);
-    if (!out.id){
-      out.id = (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + "_" + Math.random().toString(16).slice(2));
-    }
-    out.primaryGroup = out.primaryGroup || "Chest";
-    out.intensity = out.intensity || "manual";
-    out.intensityLabel = out.intensityLabel || "Manual";
-    out.notes = out.notes || "";
-    out.primary = Array.isArray(out.primary) ? out.primary : [];
-    out.aux = Array.isArray(out.aux) ? out.aux : [];
-
-    // Normalize exercise rows
-    out.primary = out.primary.map(x => ({
-      kind: "primary",
-      exercise: (x.exercise || "").trim(),
-      sets: String(x.sets || "3"),
-      reps: String(x.reps || "10"),
-      restSec: String(x.restSec || x.rest || "150")
-    })).filter(x => x.exercise);
-
-    out.aux = out.aux.map(x => ({
-      kind: "aux",
-      group: (x.group || x.auxGroup || "Biceps"),
-      exercise: (x.exercise || "").trim(),
-      sets: String(x.sets || "3"),
-      reps: String(x.reps || "12"),
-      restSec: String(x.restSec || x.rest || "90")
-    })).filter(x => x.exercise);
-
-    out.createdAt = out.createdAt || new Date().toISOString();
-    out.date = out.date || "";
-
-    return out;
-  }
-
-  function mergeLogs(existing, incoming){
-    const byId = new Map();
-    existing.forEach(it => { const n = normalizeItem(it); byId.set(n.id, n); });
-    incoming.forEach(it => { const n = normalizeItem(it); byId.set(n.id, n); });
-    // Keep stable-ish order by createdAt then date
-    const merged = Array.from(byId.values());
-    merged.sort((a,b) => String(a.createdAt||"").localeCompare(String(b.createdAt||"")));
-    return merged;
-  }
-
-  function migrateLegacyLogsIfNeeded(){
-    const currentRaw = localStorage.getItem(STORAGE_KEY);
-    let current = [];
-    try{ current = JSON.parse(currentRaw || "[]"); }catch(e){ current = []; }
-
-    // If current already has data, do nothing
-    if (Array.isArray(current) && current.length) return;
-
-    let combined = [];
-    for (const k of LEGACY_KEYS){
-      try{
-        const raw = localStorage.getItem(k);
-        const arr = JSON.parse(raw || "[]");
-        if (Array.isArray(arr) && arr.length){
-          combined = combined.concat(arr);
-        }
-      }catch(e){ /* ignore */ }
-    }
-
-    if (combined.length){
-      const migrated = mergeLogs([], combined);
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(migrated));
-      // (We intentionally do NOT delete legacy keys; keeps it safe.)
-      toast("Imported legacy log");
-    }
-  }
+  const STORAGE_KEY = "workout_log_v2"; // bumped due to schema change (restSec)
 
   function loadLog(){
     try{
@@ -878,8 +842,7 @@
         const items2 = loadLog();
         items2.splice(idx, 1);
         saveLog(items2);
-        migrateLegacyLogsIfNeeded();
-  renderLog();
+        renderLog();
         toast("Deleted");
       });
 
@@ -1031,7 +994,6 @@
     const items = loadLog();
     $("exportText").value = JSON.stringify(items, null, 2);
     $("exportBox").style.display = "block";
-    $("importBox").style.display = "none";
     toast("Export ready");
   });
 
@@ -1047,46 +1009,6 @@
       toast("Copy blocked (browser permission)");
     }
   });
-  // Import UI
-  $("showImportBtn").addEventListener("click", () => {
-    $("importBox").style.display = "block";
-    $("exportBox").style.display = "none";
-    toast("Paste JSON to import");
-  });
-
-  $("hideImportBtn").addEventListener("click", () => {
-    $("importBox").style.display = "none";
-  });
-
-  $("clearImportBtn").addEventListener("click", () => {
-    $("importText").value = "";
-    toast("Cleared");
-  });
-
-  $("importBtn").addEventListener("click", () => {
-    const text = ($("importText").value || "").trim();
-    if (!text){
-      toast("Paste JSON first");
-      return;
-    }
-    let incoming;
-    try{
-      incoming = JSON.parse(text);
-    }catch(e){
-      toast("Invalid JSON");
-      return;
-    }
-    if (!Array.isArray(incoming)){
-      toast("JSON must be an array");
-      return;
-    }
-    const existing = loadLog();
-    const merged = mergeLogs(existing, incoming);
-    saveLog(merged);
-    renderLog();
-    toast(`Imported: ${incoming.length}`);
-  });
-
 
   // ----------------------------
   // Init
