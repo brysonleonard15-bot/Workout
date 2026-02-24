@@ -272,6 +272,10 @@
           <div>
             <label for="primaryGroup">Primary workout group</label>
             <select id="primaryGroup"></select>
+            <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:10px;">
+              <button type="button" class="btn" id="randomWorkoutBtn">🎲 Random workout</button>
+              <button type="button" class="btn" id="toggleFavsBtn">⭐ Favorites</button>
+            </div>
           </div>
           <div>
             <label for="notes">Notes (optional)</label>
@@ -563,6 +567,68 @@
     options.forEach(v => datalistEl.appendChild(makeOption(v)));
   };
 
+  // Favorites (per user) — stored locally
+  const FAVS_KEY = "workout_favs_v1";
+  let showFavsOnly = false;
+
+  function getActiveUser(){
+    const u = ($("userName")?.value || "").trim();
+    return u || "Default";
+  }
+
+  function loadFavs(){
+    try{
+      const raw = localStorage.getItem(FAVS_KEY);
+      const obj = JSON.parse(raw || "{}");
+      return (obj && typeof obj === "object") ? obj : {};
+    }catch(e){ return {}; }
+  }
+
+  function saveFavs(obj){
+    localStorage.setItem(FAVS_KEY, JSON.stringify(obj));
+  }
+
+  function ensureUserFavs(all, user){
+    if (!all[user]) all[user] = { primary:{}, aux:{} };
+    if (!all[user].primary) all[user].primary = {};
+    if (!all[user].aux) all[user].aux = {};
+    return all[user];
+  }
+
+  function getFavArr(kind, group){
+    const all = loadFavs();
+    const user = getActiveUser();
+    const u = ensureUserFavs(all, user);
+    const bucket = (kind === "primary") ? u.primary : u.aux;
+    return bucket[group] || [];
+  }
+
+  function isFav(kind, group, exercise){
+    return getFavArr(kind, group).includes(exercise);
+  }
+
+  function toggleFav(kind, group, exercise){
+    const all = loadFavs();
+    const user = getActiveUser();
+    const u = ensureUserFavs(all, user);
+    const bucket = (kind === "primary") ? u.primary : u.aux;
+    const arr = (bucket[group] || []).slice();
+    const idx = arr.indexOf(exercise);
+    if (idx >= 0) arr.splice(idx,1);
+    else arr.push(exercise);
+    bucket[group] = arr;
+    saveFavs(all);
+  }
+
+  function sortWithFavs(list, favArr){
+    const favSet = new Set(favArr || []);
+    const favs = [];
+    const rest = [];
+    (list || []).forEach(x => (favSet.has(x) ? favs : rest).push(x));
+    return showFavsOnly ? favs : favs.concat(rest);
+  }
+
+
   const fmtRest = (sec) => {
     const s = Number(sec || 0);
     if (!s) return "";
@@ -629,6 +695,16 @@
 
     exWrap.appendChild(exLab);
     exWrap.appendChild(exInput);
+
+    const favBtn = document.createElement("button");
+    favBtn.type = "button";
+    favBtn.className = "btn";
+    favBtn.style.padding = "10px 12px";
+    favBtn.style.borderRadius = "14px";
+    favBtn.style.marginTop = "8px";
+    favBtn.textContent = "☆ Favorite";
+    exWrap.appendChild(favBtn);
+
     exWrap.appendChild(exList);
 // Sets
     const setsWrap = document.createElement("div");
@@ -700,15 +776,56 @@
 
     const refreshExercises = () => {
       const list = getExerciseList();
-      fillDataList(exList, list);
 
-      // Preserve existing typed value if it matches; otherwise apply preset/default
+      // Favorites: show favorites first (or only) for this user/group
+      const user = getActiveUser();
+      if (kind === "primary"){
+        const g = $("primaryGroup").value;
+        const favArr = getFavArr("primary", g);
+        fillDataList(exList, sortWithFavs(list, favArr));
+      } else {
+        const g = groupSel ? groupSel.value : "";
+        const favArr = getFavArr("aux", g);
+        fillDataList(exList, sortWithFavs(list, favArr));
+      }
+// Preserve existing typed value if it matches; otherwise apply preset/default
       if (exerciseValue && list.includes(exerciseValue)) exInput.value = exerciseValue;
       else if (exInput.value && list.includes(exInput.value)) { /* keep */ }
       else exInput.value = "";
     };
 
     refreshExercises();
+
+    const updateFavBtn = () => {
+      const ex = (exInput.value || "").trim();
+      if (!ex){ favBtn.textContent = "☆ Favorite"; return; }
+      if (kind === "primary"){
+        const g = $("primaryGroup").value;
+        favBtn.textContent = isFav("primary", g, ex) ? "★ Favorited" : "☆ Favorite";
+      } else {
+        const g = groupSel ? groupSel.value : "";
+        favBtn.textContent = isFav("aux", g, ex) ? "★ Favorited" : "☆ Favorite";
+      }
+    };
+
+    favBtn.addEventListener("click", () => {
+      const ex = (exInput.value || "").trim();
+      if (!ex){ toast("Pick an exercise first"); return; }
+      if (kind === "primary"){
+        const g = $("primaryGroup").value;
+        toggleFav("primary", g, ex);
+      } else {
+        const g = groupSel ? groupSel.value : "";
+        toggleFav("aux", g, ex);
+      }
+      refreshExercises();
+      updateFavBtn();
+      toast("Updated favorites");
+    });
+
+    exInput.addEventListener("change", updateFavBtn);
+    exInput.addEventListener("keyup", updateFavBtn);
+    updateFavBtn();
 
     // For aux: changing group updates exercises
     if (groupSel){
@@ -1010,7 +1127,8 @@ if (!shownItems.length){
       if (!exInput || !exList) return;
 
       const list = primaryGroups[$("primaryGroup").value] ?? [];
-      fillDataList(exList, list);
+      const favArr = getFavArr("primary", $("primaryGroup").value);
+      fillDataList(exList, sortWithFavs(list, favArr));
 
       // If current value no longer matches, clear it so user re-selects
       if (exInput.value && !list.includes(exInput.value)) exInput.value = "";
@@ -1113,6 +1231,98 @@ if (!shownItems.length){
     renderLog();
     toast("All users");
   });
+
+  // Favorites toggle (favorites first vs favorites only)
+  $("toggleFavsBtn").addEventListener("click", () => {
+    showFavsOnly = !showFavsOnly;
+    $("toggleFavsBtn").textContent = showFavsOnly ? "⭐ Favorites (only)" : "⭐ Favorites";
+
+    // Refresh existing rows
+    Array.from($("primaryContainer").children).forEach(row => {
+      const dl = row.querySelector("datalist");
+      if (!dl) return;
+      const list = primaryGroups[$("primaryGroup").value] ?? [];
+      const favArr = getFavArr("primary", $("primaryGroup").value);
+      fillDataList(dl, sortWithFavs(list, favArr));
+    });
+
+    Array.from($("auxContainer").children).forEach(row => {
+      const dl = row.querySelector("datalist");
+      const gSel = row.querySelector(".auxGroupSel");
+      if (!dl || !gSel) return;
+      const list = auxGroups[gSel.value] ?? [];
+      const favArr = getFavArr("aux", gSel.value);
+      fillDataList(dl, sortWithFavs(list, favArr));
+    });
+
+    toast(showFavsOnly ? "Favorites only" : "Favorites + all");
+  });
+
+  // Random workout (based on selected primary group)
+  function sampleUnique(arr, n){
+    const a = (arr || []).slice();
+    for (let i=a.length-1; i>0; i--){
+      const j = Math.floor(Math.random() * (i+1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a.slice(0, Math.min(n, a.length));
+  }
+
+  function buildRandomWorkout(){
+    const plan = templates["moderate"]; // sensible default structure
+
+    $("intensity").value = "manual";
+    $("primaryContainer").innerHTML = "";
+    $("auxContainer").innerHTML = "";
+
+    const primaryGroup = $("primaryGroup").value;
+    const primList = primaryGroups[primaryGroup] ?? [];
+    const primPick = sampleUnique(primList, plan.pCount);
+
+    // Recommended aux pairings
+    const auxPlanByPrimary = {
+      "Chest": ["Triceps", "Shoulders", "Abs", "Rear Delts", "Forearms"],
+      "Back": ["Biceps", "Rear Delts", "Abs", "Upper Back / Traps", "Forearms"],
+      "Legs": ["Quads", "Hamstrings", "Calves", "Abs", "Forearms"],
+      "Shoulders": ["Rear Delts", "Triceps", "Abs", "Upper Back / Traps", "Biceps"],
+      "Arms": ["Biceps", "Triceps", "Forearms", "Abs", "Rear Delts"]
+    };
+    const auxOrder = auxPlanByPrimary[primaryGroup] || Object.keys(auxGroups);
+
+    // Primary rows
+    for (let i=0; i<plan.pCount; i++){
+      addPrimaryRow({ setsValue: plan.pSets, repsValue: plan.pReps, restValue: plan.pRest });
+      const row = $("primaryContainer").lastElementChild;
+      const inp = row ? row.querySelector(".exerciseInput") : null;
+      if (inp) inp.value = primPick[i] || "";
+    }
+
+    // Aux rows
+    for (let i=0; i<plan.aCount; i++){
+      const g = auxOrder[i % auxOrder.length];
+      const exList = auxGroups[g] ?? [];
+      const ex = sampleUnique(exList, 1)[0] || "";
+
+      addAuxRow({ groupValue: g, setsValue: plan.aSets, repsValue: plan.aReps, restValue: plan.aRest });
+      const row = $("auxContainer").lastElementChild;
+      if (row){
+        const gSel = row.querySelector(".auxGroupSel");
+        const inp = row.querySelector(".exerciseInput");
+        const dl = row.querySelector("datalist");
+        if (gSel) gSel.value = g;
+        if (dl){
+          const favArr = getFavArr("aux", g);
+          fillDataList(dl, sortWithFavs(auxGroups[g] ?? [], favArr));
+        }
+        if (inp) inp.value = ex;
+      }
+    }
+
+    updateCounts();
+    toast("Random workout created");
+  }
+
+  $("randomWorkoutBtn").addEventListener("click", () => buildRandomWorkout());
 
 
   // ----------------------------
