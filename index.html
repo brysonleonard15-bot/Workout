@@ -99,7 +99,7 @@
 
     label{display:block;font-size:12px;color:var(--muted);margin:0 0 6px;}
     input, select, button, textarea{font: inherit;}
-    input[type="date"], input[type="text"], input[type="number"], select, textarea{
+    input[type="date"], input[type="text"], select, textarea{
       width:100%;
       background: rgba(0,0,0,.24);
       color:var(--text);
@@ -110,7 +110,7 @@
       transition: transform .05s ease, border-color .15s ease, background .15s ease;
     }
     textarea{min-height:84px; resize:vertical}
-    input[type="date"]:focus, input[type="text"]:focus, input[type="number"]:focus, select:focus, textarea:focus{
+    input[type="date"]:focus, input[type="text"]:focus, select:focus, textarea:focus{
       border-color: rgba(49,243,176,.55);
       box-shadow: 0 0 0 4px rgba(49,243,176,.12);
     }
@@ -126,9 +126,9 @@
       display:grid;
     }
     /* Primary rows: Exercise | Sets | Reps | Rest | Remove */
-    .row.primary{grid-template-columns: 1.55fr .75fr .75fr .85fr .85fr auto;}
+    .row.primary{grid-template-columns: 1.8fr .8fr .8fr .9fr auto;}
     /* Aux rows: Aux Group | Exercise | Sets | Reps | Rest | Remove */
-    .row.aux{grid-template-columns: 1.1fr 1.25fr .75fr .75fr .85fr .85fr auto;}
+    .row.aux{grid-template-columns: 1.25fr 1.55fr .8fr .8fr .9fr auto;}
 
     @media (max-width: 780px){
       .row.primary{grid-template-columns:1fr 1fr; align-items:stretch}
@@ -214,13 +214,7 @@
       font-size:12.5px;
     }
     .toast.show{opacity:1; transform: translateX(-50%) translateY(-2px)}
-  
-    @media (max-width: 520px){
-      .setDetailsGrid{grid-template-columns: 1fr 1fr;}
-      .setHdr,.wtHdr,.repsHdr{display:none;}
-      .setCell{grid-column: 1 / -1;}
-    }
-</style>
+  </style>
 </head>
 <body>
   <header>
@@ -242,7 +236,7 @@
           <b>Build today’s workout</b>
           <span>Pick a primary lift focus, add auxiliaries, then save.</span>
         </div>
-        <div style="display:flex; gap:10px; flex-wrap:wrap; justify-content:flex-end;"><span class="pill"><span class="dot"></span>Local-only storage</span><button type="button" class="btn" id="profileBtn">👤 Profile</button></div>
+        <span class="pill"><span class="dot"></span>Local-only storage</span>
       </div>
       <div class="bd">
         <div class="grid2">
@@ -258,10 +252,6 @@
               <option value="moderate">Moderate — 2 primary (3×6–10, 120–150s) + 3 aux (3×10–15, 60–90s)</option>
               <option value="intense">Intense — 2 primary (3×5–8, 150–180s) + 4 aux (3×8–15, 90s)</option>
             </select>
-            <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:10px;">
-              <button type="button" class="btn" id="editTemplatesBtn">⚙️ Edit templates</button>
-              <button type="button" class="btn" id="resetTemplatesBtn">↩︎ Reset templates</button>
-            </div>
           </div>
         </div>
 
@@ -270,7 +260,11 @@
             <label for="userName">User</label>
             <input id="userName" type="text" placeholder="e.g., Bryson" />
           </div>
-</div>
+          <div>
+            <label for="sessionLabel">Session label (optional)</label>
+            <input id="sessionLabel" type="text" placeholder="e.g., Push A, Pull B, Leg Day" />
+          </div>
+        </div>
 
         <div class="divider"></div>
 
@@ -278,10 +272,6 @@
           <div>
             <label for="primaryGroup">Primary workout group</label>
             <select id="primaryGroup"></select>
-            <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:10px;">
-              <button type="button" class="btn" id="randomWorkoutBtn">🎲 Random workout</button>
-              <button type="button" class="btn" id="toggleFavsBtn">⭐ Favorites</button>
-            </div>
           </div>
           <div>
             <label for="notes">Notes (optional)</label>
@@ -313,7 +303,6 @@
 
         <div style="display:flex; gap:10px; flex-wrap:wrap;">
           <button type="button" class="btn btnPrimary" id="saveBtn">Save to log</button>
-          <button type="button" class="btn" id="shareBtn">🔗 Share workout</button>
           <button type="button" class="btn" id="resetBtn">Reset form</button>
         </div>
         <div class="hint">Your log is saved in <b>localStorage</b> on this device/browser. Use Export JSON in the Log panel to backup.</div>
@@ -361,106 +350,13 @@
         <div id="logList" class="logList"></div>
       </div>
     </aside>
-  
-  <!-- Templates Editor Modal -->
-  <div id="templatesModal" style="display:none; position:fixed; inset:0; z-index:100; background: rgba(0,0,0,.55);">
-    <div style="max-width:980px; margin:22px auto; padding:0 18px;">
-      <div class="card" style="box-shadow: 0 30px 90px rgba(0,0,0,.65);">
-        <div class="hd">
-          <div class="title">
-            <b>Template settings</b>
-            <span>Customize Light / Moderate / Intense defaults. Saved locally.</span>
-          </div>
-          <div style="display:flex; gap:10px; flex-wrap:wrap;">
-            <button type="button" class="btn" id="closeTemplatesBtn">Close</button>
-            <button type="button" class="btn btnPrimary" id="saveTemplatesBtn">Save</button>
-          </div>
-        </div>
-        <div class="bd">
-          <div id="templatesEditor"></div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Profile Modal -->
-  <div id="profileModal" style="display:none; position:fixed; inset:0; z-index:110; background: rgba(0,0,0,.55);">
-    <div style="max-width:980px; margin:22px auto; padding:0 18px;">
-      <div class="card" style="box-shadow: 0 30px 90px rgba(0,0,0,.65);">
-        <div class="hd">
-          <div class="title">
-            <b>User profile</b>
-            <span>Per-user preferences (stored locally).</span>
-          </div>
-          <div style="display:flex; gap:10px; flex-wrap:wrap;">
-            <button type="button" class="btn" id="closeProfileBtn">Close</button>
-            <button type="button" class="btn btnPrimary" id="saveProfileBtn">Save</button>
-          </div>
-        </div>
-        <div class="bd">
-          <div class="grid2">
-            <div>
-              <label for="profileGoal">Goal</label>
-              <select id="profileGoal">
-                <option>Hypertrophy</option>
-                <option>Strength</option>
-                <option>Endurance</option>
-              </select>
-            </div>
-            <div>
-              <label for="profileEquipment">Equipment</label>
-              <select id="profileEquipment">
-                <option>Full gym</option>
-                <option>Home gym</option>
-                <option>Dumbbells only</option>
-                <option>Machines only</option>
-              </select>
-            </div>
-          </div>
-          <div class="grid2" style="margin-top:12px;">
-            <div>
-              <label for="profileRepLow">Preferred reps (low)</label>
-              <input id="profileRepLow" type="number" min="1" max="30" step="1" />
-            </div>
-            <div>
-              <label for="profileRepHigh">Preferred reps (high)</label>
-              <input id="profileRepHigh" type="number" min="1" max="30" step="1" />
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Share Modal -->
-  <div id="shareModal" style="display:none; position:fixed; inset:0; z-index:120; background: rgba(0,0,0,.55);">
-    <div style="max-width:980px; margin:22px auto; padding:0 18px;">
-      <div class="card" style="box-shadow: 0 30px 90px rgba(0,0,0,.65);">
-        <div class="hd">
-          <div class="title">
-            <b>Share workout</b>
-            <span>Copy a link that contains this workout. Recipient can open it and load it.</span>
-          </div>
-          <div style="display:flex; gap:10px; flex-wrap:wrap;">
-            <button type="button" class="btn" id="closeShareBtn">Close</button>
-            <button type="button" class="btn btnPrimary" id="copyShareBtn">Copy link</button>
-          </div>
-        </div>
-        <div class="bd">
-          <label for="shareLink">Share link</label>
-          <textarea id="shareLink" spellcheck="false"></textarea>
-        </div>
-      </div>
-    </div>
-  </div>
-
-</main>
+  </main>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script>
-document.addEventListener('DOMContentLoaded', () => {
-  const BUILD_VERSION = "2026-02-24 02:49:35";
+(function(){
+  const BUILD_VERSION = "2026-02-24 01:19:08";
   console.log("Workout Log Build:", BUILD_VERSION);
   // ----------------------------
   // Data: groups + exercises
@@ -623,179 +519,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const setOptions = ["1","2","3","4","5","6"];
   // Keep reps dropdown simple but cover the recommended ranges
   const repOptions = ["5","6","8","10","12","15","20"];
-  
-    // Default Weight (lbs)
-    const wtWrap = document.createElement("div");
-    const wtLab = document.createElement("label");
-    wtLab.textContent = "Default Wt";
-    const wtInp = document.createElement("input");
-    wtInp.type = "number";
-    wtInp.min = "0";
-    wtInp.step = "2.5";
-    wtInp.placeholder = "lbs";
-    wtInp.className = "weightInp";
-    wtWrap.appendChild(wtLab);
-    wtWrap.appendChild(wtInp);
-
-    // Per-set details (weight + reps per set)
-    const detailsWrap = document.createElement("div");
-    detailsWrap.className = "setDetailsWrap";
-    detailsWrap.style.gridColumn = "1 / -1";
-    detailsWrap.style.display = "none";
-    detailsWrap.style.marginTop = "8px";
-    detailsWrap.style.padding = "10px";
-    detailsWrap.style.borderRadius = "14px";
-    detailsWrap.style.background = "rgba(0,0,0,.18)";
-    detailsWrap.style.border = "1px solid rgba(255,255,255,.10)";
-
-    const detailsHdr = document.createElement("div");
-    detailsHdr.style.display = "flex";
-    detailsHdr.style.gap = "10px";
-    detailsHdr.style.flexWrap = "wrap";
-    detailsHdr.style.alignItems = "center";
-    detailsHdr.style.justifyContent = "space-between";
-
-    const detailsTitle = document.createElement("div");
-    detailsTitle.style.color = "var(--muted)";
-    detailsTitle.style.fontSize = "12px";
-    detailsTitle.textContent = "Per-set tracking (weight + reps).";
-
-    const detailsBtns = document.createElement("div");
-    detailsBtns.style.display = "flex";
-    detailsBtns.style.gap = "8px";
-    detailsBtns.style.flexWrap = "wrap";
-
-    const toggleDetailsBtn = document.createElement("button");
-    toggleDetailsBtn.type = "button";
-    toggleDetailsBtn.className = "btn";
-    toggleDetailsBtn.textContent = "📋 Sets detail";
-
-    const fillBtn = document.createElement("button");
-    fillBtn.type = "button";
-    fillBtn.className = "btn";
-    fillBtn.textContent = "Fill from defaults";
-
-    const copyDownBtn = document.createElement("button");
-    copyDownBtn.type = "button";
-    copyDownBtn.className = "btn";
-    copyDownBtn.textContent = "Copy last ↓";
-
-    detailsBtns.appendChild(toggleDetailsBtn);
-    detailsBtns.appendChild(fillBtn);
-    detailsBtns.appendChild(copyDownBtn);
-
-    detailsHdr.appendChild(detailsTitle);
-    detailsHdr.appendChild(detailsBtns);
-
-    const detailsGrid = document.createElement("div");
-    detailsGrid.className = "setDetailsGrid";
-    detailsGrid.style.display = "grid";
-    detailsGrid.style.gridTemplateColumns = "70px 1fr 1fr";
-    detailsGrid.style.gap = "8px";
-    detailsGrid.style.marginTop = "10px";
-
-    const h1 = document.createElement("div"); h1.className="setHdr"; h1.style.color="var(--muted)"; h1.style.fontSize="12px"; h1.textContent="Set";
-    const h2 = document.createElement("div"); h2.className="wtHdr";  h2.style.color="var(--muted)"; h2.style.fontSize="12px"; h2.textContent="Weight (lb)";
-    const h3 = document.createElement("div"); h3.className="repsHdr";h3.style.color="var(--muted)"; h3.style.fontSize="12px"; h3.textContent="Reps";
-    detailsGrid.appendChild(h1); detailsGrid.appendChild(h2); detailsGrid.appendChild(h3);
-
-    detailsWrap.appendChild(detailsHdr);
-    detailsWrap.appendChild(detailsGrid);
-
-    function rebuildSetDetails(preserve=true){
-      const targetSets = parseInt(setsSel.value || "0", 10) || 0;
-      const existing = {};
-      if (preserve){
-        Array.from(detailsGrid.querySelectorAll("[data-set]")).forEach(inp => {
-          const s = inp.getAttribute("data-set");
-          const k = inp.getAttribute("data-kind");
-          existing[`${s}_${k}`] = inp.value;
-        });
-      }
-      while (detailsGrid.children.length > 3) detailsGrid.removeChild(detailsGrid.lastChild);
-
-      for (let i=1; i<=targetSets; i++){
-        const cSet = document.createElement("div");
-        cSet.className = "setCell";
-        cSet.textContent = `Set ${i}`;
-        cSet.style.padding = "10px 11px";
-        cSet.style.border = "1px solid rgba(255,255,255,.12)";
-        cSet.style.borderRadius = "14px";
-        cSet.style.background = "rgba(0,0,0,.24)";
-        cSet.style.color = "var(--text)";
-        cSet.style.fontSize = "13px";
-
-        const w = document.createElement("input");
-        w.type="number"; w.min="0"; w.step="2.5"; w.placeholder="lbs";
-        w.className="setWeightInp";
-        w.setAttribute("data-set", String(i));
-        w.setAttribute("data-kind", "w");
-        w.style.width="100%";
-        w.style.background="rgba(0,0,0,.24)";
-        w.style.color="var(--text)";
-        w.style.border="1px solid rgba(255,255,255,.12)";
-        w.style.padding="10px 11px";
-        w.style.borderRadius="14px";
-
-        const r = document.createElement("input");
-        r.type="number"; r.min="0"; r.step="1"; r.placeholder="reps";
-        r.className="setRepsInp";
-        r.setAttribute("data-set", String(i));
-        r.setAttribute("data-kind", "r");
-        r.style.width="100%";
-        r.style.background="rgba(0,0,0,.24)";
-        r.style.color="var(--text)";
-        r.style.border="1px solid rgba(255,255,255,.12)";
-        r.style.padding="10px 11px";
-        r.style.borderRadius="14px";
-
-        const ew = existing[`${i}_w`];
-        const er = existing[`${i}_r`];
-        if (typeof ew !== "undefined") w.value = ew;
-        if (typeof er !== "undefined") r.value = er;
-
-        detailsGrid.appendChild(cSet);
-        detailsGrid.appendChild(w);
-        detailsGrid.appendChild(r);
-      }
-    }
-
-    function fillFromDefaults(){
-      const targetSets = parseInt(setsSel.value || "0", 10) || 0;
-      if (!targetSets){ toast("Set sets first"); return; }
-      const dw = (wtInp.value || "").trim();
-      const dr = (repsSel.value || "").trim();
-      rebuildSetDetails(true);
-      Array.from(detailsGrid.querySelectorAll(".setWeightInp")).forEach(inp => { if (dw) inp.value = dw; });
-      Array.from(detailsGrid.querySelectorAll(".setRepsInp")).forEach(inp => { if (dr) inp.value = dr; });
-      toast("Filled");
-    }
-
-    function copyDownFromLast(){
-      const targetSets = parseInt(setsSel.value || "0", 10) || 0;
-      if (targetSets < 2){ toast("Need 2+ sets"); return; }
-      for (let i=2; i<=targetSets; i++){
-        const prevW = detailsGrid.querySelector(`.setWeightInp[data-set="${i-1}"]`);
-        const prevR = detailsGrid.querySelector(`.setRepsInp[data-set="${i-1}"]`);
-        const curW  = detailsGrid.querySelector(`.setWeightInp[data-set="${i}"]`);
-        const curR  = detailsGrid.querySelector(`.setRepsInp[data-set="${i}"]`);
-        if (!prevW || !prevR || !curW || !curR) continue;
-        if (!curW.value && prevW.value) curW.value = prevW.value;
-        if (!curR.value && prevR.value) curR.value = prevR.value;
-      }
-      toast("Copied down");
-    }
-
-    toggleDetailsBtn.addEventListener("click", () => {
-      const on = detailsWrap.style.display !== "none";
-      detailsWrap.style.display = on ? "none" : "block";
-      if (!on) rebuildSetDetails(true);
-    });
-    fillBtn.addEventListener("click", () => fillFromDefaults());
-    copyDownBtn.addEventListener("click", () => copyDownFromLast());
-    setsSel.addEventListener("change", () => { if (detailsWrap.style.display !== "none") rebuildSetDetails(true); });
-
-// Rest options in seconds
+  // Rest options in seconds
   const restOptions = ["45","60","90","120","150","180","240"];
 
   // Template defaults (the “clean upgrade”)
@@ -812,7 +536,6 @@ document.addEventListener('DOMContentLoaded', () => {
   // DOM helpers
   // ----------------------------
   const $ = (id) => document.getElementById(id);
-  const on = (id, evt, fn) => { const el=$(id); if(!el) return; el.addEventListener(evt, fn); };
 
   const toast = (msg) => {
     const t = $("toast");
@@ -862,7 +585,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // ----------------------------
   // Row builders
   // ----------------------------
-  function createExerciseRow({kind, groupValue, exerciseValue, setsValue, repsValue, restValue, weightValue, setDetailsValue}){
+  function createExerciseRow({kind, groupValue, exerciseValue, setsValue, repsValue, restValue}){
     const row = document.createElement("div");
     row.className = `row ${kind === "primary" ? "primary" : "aux"}`;
     row.dataset.kind = kind;
@@ -906,15 +629,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     exWrap.appendChild(exLab);
     exWrap.appendChild(exInput);
-
-    const favBtn = document.createElement("button");
-    favBtn.type = "button";
-    favBtn.className = "btn";
-    favBtn.style.padding = "10px 12px";
-    favBtn.style.borderRadius = "14px";
-    favBtn.style.marginTop = "8px";
-    favBtn.textContent = "☆ Favorite";
-    exWrap.appendChild(favBtn);
     exWrap.appendChild(exList);
 // Sets
     const setsWrap = document.createElement("div");
@@ -963,17 +677,14 @@ document.addEventListener('DOMContentLoaded', () => {
       row.appendChild(exWrap);
       row.appendChild(setsWrap);
       row.appendChild(repsWrap);
-      row.appendChild(wtWrap);
       row.appendChild(restWrap);
       row.appendChild(removeBtn);
     } else {
       row.appendChild(exWrap);
       row.appendChild(setsWrap);
       row.appendChild(repsWrap);
-      row.appendChild(wtWrap);
       row.appendChild(restWrap);
       row.appendChild(removeBtn);
-      row.appendChild(detailsWrap);
     }
 
     // Populate exercise list based on kind
@@ -989,15 +700,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const refreshExercises = () => {
       const list = getExerciseList();
-      const user = activeUser();
-      if (kind === "primary"){
-        const favArr = getFavArrPrimary(user, $("primaryGroup").value);
-        fillDataList(exList, sortWithFavs(list, favArr));
-      } else {
-        const g = groupSel ? groupSel.value : "";
-        const favArr = getFavArrAux(user, g);
-        fillDataList(exList, sortWithFavs(list, favArr));
-      }
+      fillDataList(exList, list);
 
       // Preserve existing typed value if it matches; otherwise apply preset/default
       if (exerciseValue && list.includes(exerciseValue)) exInput.value = exerciseValue;
@@ -1006,45 +709,6 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     refreshExercises();
-
-    const updateFavBtn = () => {
-      const user = activeUser();
-      const ex = (exInput.value||"").trim();
-      if (!ex){ favBtn.textContent = "☆ Favorite"; return; }
-      if (kind === "primary"){
-        const arr = getFavArrPrimary(user, $("primaryGroup").value);
-        favBtn.textContent = arr.includes(ex) ? "★ Favorited" : "☆ Favorite";
-      } else {
-        const g = groupSel ? groupSel.value : "";
-        const arr = getFavArrAux(user, g);
-        favBtn.textContent = arr.includes(ex) ? "★ Favorited" : "☆ Favorite";
-      }
-    };
-
-    favBtn.addEventListener("click", () => {
-      const user = activeUser();
-      const ex = (exInput.value||"").trim();
-      if (!ex){ toast("Pick an exercise first"); return; }
-      if (kind === "primary"){
-        const g = $("primaryGroup").value;
-        const arr = getFavArrPrimary(user, g).slice();
-        const i = arr.indexOf(ex);
-        if (i>=0) arr.splice(i,1); else arr.push(ex);
-        setFavArrPrimary(user, g, arr);
-      } else {
-        const g = groupSel ? groupSel.value : "";
-        const arr = getFavArrAux(user, g).slice();
-        const i = arr.indexOf(ex);
-        if (i>=0) arr.splice(i,1); else arr.push(ex);
-        setFavArrAux(user, g, arr);
-      }
-      updateFavBtn();
-      refreshExercises();
-      toast("Updated favorites");
-    });
-
-    exInput.addEventListener("change", updateFavBtn);
-    updateFavBtn();
 
     // For aux: changing group updates exercises
     if (groupSel){
@@ -1063,19 +727,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (restValue) restSel.value = String(restValue);
     else restSel.value = (kind === "primary") ? "150" : "90";
-
-    if (weightValue !== undefined && weightValue !== null && weightValue !== "") wtInp.value = String(weightValue);
-
-    if (Array.isArray(setDetailsValue) && setDetailsValue.length){
-      detailsWrap.style.display = "block";
-      rebuildSetDetails(false);
-      setDetailsValue.forEach(s => {
-        const wi = detailsGrid.querySelector(`.setWeightInp[data-set="${s.set}"]`);
-        const ri = detailsGrid.querySelector(`.setRepsInp[data-set="${s.set}"]`);
-        if (wi) wi.value = s.weight || "";
-        if (ri) ri.value = s.reps || "";
-      });
-    }
 
     return row;
   }
@@ -1104,41 +755,24 @@ document.addEventListener('DOMContentLoaded', () => {
   // ----------------------------
   function applyTemplate(mode){
     if (mode === "manual") return;
+
     const plan = templates[mode];
     if (!plan) return;
 
+    // Clear existing
     $("primaryContainer").innerHTML = "";
     $("auxContainer").innerHTML = "";
 
-    const pg = $("primaryGroup").value;
-    const primaryList = primaryGroups[pg] || [];
-    const pickN = (arr,n) => arr.slice(0,n);
+    const primaryGroup = $("primaryGroup").value;
+    const primaryList = primaryGroups[primaryGroup] ?? [];
 
-    // Primary
-    const prim = pickN(primaryList, plan.pCount);
-    for (let i=0; i<plan.pCount; i++){
-      addPrimaryRow({ setsValue: plan.pSets, repsValue: plan.pReps, restValue: plan.pRest, exerciseValue: prim[i] || "" });
-    }
-
-    // Aux group recommendations
-    const auxPlanByPrimary = {
-      "Chest": ["Triceps","Shoulders","Abs","Rear Delts","Forearms"],
-      "Back": ["Biceps","Rear Delts","Abs","Upper Back / Traps","Forearms"],
-      "Legs": ["Quads","Hamstrings","Calves","Abs","Forearms"],
-      "Shoulders": ["Rear Delts","Triceps","Abs","Upper Back / Traps","Biceps"],
-      "Arms": ["Biceps","Triceps","Forearms","Abs","Rear Delts"]
-    };
-    const auxOrder = auxPlanByPrimary[pg] || Object.keys(auxGroups);
-
-    for (let i=0; i<plan.aCount; i++){
-      const g = auxOrder[i % auxOrder.length];
-      const exList = auxGroups[g] || [];
-      const ex = exList[i % exList.length] || "";
-      addAuxRow({ groupValue: g, setsValue: plan.aSets, repsValue: plan.aReps, restValue: plan.aRest, exerciseValue: ex });
-    }
-
-    toast(`Auto-filled: ${mode}`);
-  }
+    // Simple deterministic pick helper (no randomness, stable results)
+    const pickN = (arr, n, start=0) => {
+      const out = [];
+      if (!arr.length) return out;
+      for (let i=0; i<n; i++){
+        out.push(arr[(start + i) % arr.length]);
+      }
       return out;
     };
 
@@ -1192,13 +826,7 @@ document.addEventListener('DOMContentLoaded', () => {
         exercise: (row.querySelector(".exerciseInput")?.value || "").trim(),
         sets: row.querySelector(".setsSel")?.value || "",
         reps: row.querySelector(".repsSel")?.value || "",
-        restSec: row.querySelector(".restSel")?.value || "",
-        weight: row.querySelector(".weightInp")?.value || "",
-        setDetails: Array.from(row.querySelectorAll(".setWeightInp")).map(wi => {
-          const s = wi.getAttribute("data-set");
-          const ri = row.querySelector(`.setRepsInp[data-set="${s}"]`);
-          return { set: parseInt(s,10), weight: wi.value || "", reps: (ri ? (ri.value||"") : "") };
-        }).filter(x => (x.weight || x.reps))
+        restSec: row.querySelector(".restSel")?.value || ""
       };
       if (kind === "aux"){
         obj.group = row.querySelector(".auxGroupSel")?.value || "";
@@ -1266,7 +894,7 @@ if (!shownItems.length){
 
       const left = document.createElement("div");
       const h3 = document.createElement("h3");
-      h3.textContent = `${item.date} — ${item.primaryGroup}`;
+      h3.textContent = `${item.date} — ${item.primaryGroup}${item.sessionLabel ? " • " + item.sessionLabel : ""}`;
       const meta = document.createElement("div");
       meta.className = "meta";
       meta.textContent = `${item.userName || "Default"} • ${item.intensityLabel}${item.notes ? " • Notes included" : ""}`;
@@ -1345,7 +973,8 @@ if (!shownItems.length){
     $("primaryGroup").value = item.primaryGroup;
     $("notes").value = item.notes || "";
     $("userName").value = item.userName || "Default";
-    
+    $("sessionLabel").value = item.sessionLabel || "";
+
     $("primaryContainer").innerHTML = "";
     $("auxContainer").innerHTML = "";
 
@@ -1353,9 +982,7 @@ if (!shownItems.length){
       exerciseValue: x.exercise,
       setsValue: x.sets,
       repsValue: x.reps,
-      restValue: x.restSec,
-      weightValue: x.weight,
-      setDetailsValue: x.setDetails
+      restValue: x.restSec
     }));
 
     item.aux.forEach(x => addAuxRow({
@@ -1363,184 +990,11 @@ if (!shownItems.length){
       exerciseValue: x.exercise,
       setsValue: x.sets,
       repsValue: x.reps,
-      restValue: x.restSec,
-      weightValue: x.weight,
-      setDetailsValue: x.setDetails
+      restValue: x.restSec
     }));
 
     updateCounts();
   }
-
-  // ----------------------------
-  // Templates (editable)
-  // ----------------------------
-  const DEFAULT_TEMPLATES = {
-    light:    { pCount: 1, aCount: 2, pSets: 2, pReps: 12, pRest: 90,  aSets: 2, aReps: 15, aRest: 60 },
-    moderate: { pCount: 2, aCount: 3, pSets: 3, pReps: 8,  pRest: 150, aSets: 3, aReps: 12, aRest: 90 },
-    intense:  { pCount: 2, aCount: 4, pSets: 3, pReps: 6,  pRest: 180, aSets: 3, aReps: 10, aRest: 90 }
-  };
-  const TEMPLATES_KEY = "workout_templates_rebuild1";
-
-  const clone = (obj) => JSON.parse(JSON.stringify(obj));
-  const clampInt = (v, min, max, fb) => {
-    const n = parseInt(String(v),10);
-    return Number.isFinite(n) ? Math.max(min, Math.min(max, n)) : fb;
-  };
-
-  function loadTemplates(){
-    try{
-      const raw = localStorage.getItem(TEMPLATES_KEY);
-      const obj = JSON.parse(raw || "null");
-      if (!obj) return clone(DEFAULT_TEMPLATES);
-      const out = clone(DEFAULT_TEMPLATES);
-      ["light","moderate","intense"].forEach(k => {
-        if (!obj[k]) return;
-        out[k] = {
-          pCount: clampInt(obj[k].pCount, 1, 6, out[k].pCount),
-          aCount: clampInt(obj[k].aCount, 0, 8, out[k].aCount),
-          pSets:  clampInt(obj[k].pSets, 1, 6, out[k].pSets),
-          pReps:  clampInt(obj[k].pReps, 1, 30, out[k].pReps),
-          pRest:  clampInt(obj[k].pRest, 15, 600, out[k].pRest),
-          aSets:  clampInt(obj[k].aSets, 1, 6, out[k].aSets),
-          aReps:  clampInt(obj[k].aReps, 1, 30, out[k].aReps),
-          aRest:  clampInt(obj[k].aRest, 15, 600, out[k].aRest)
-        };
-      });
-      return out;
-    }catch(e){ return clone(DEFAULT_TEMPLATES); }
-  }
-  function saveTemplates(t){ localStorage.setItem(TEMPLATES_KEY, JSON.stringify(t)); }
-
-  let templates = loadTemplates();
-
-  function renderTemplatesEditor(){
-    const host = $("templatesEditor");
-    if (!host) return;
-    host.innerHTML = "";
-    const makeCard = (key,label) => {
-      const t = templates[key];
-      const div = document.createElement("div");
-      div.className = "logItem";
-      div.style.marginBottom = "12px";
-      div.innerHTML = `
-        <div class="top">
-          <div>
-            <h3 style="margin:0;">${label}</h3>
-            <div class="meta">Primary ${t.pCount} • Aux ${t.aCount} • P ${t.pSets}×${t.pReps} @ ${fmtRest(t.pRest)} • A ${t.aSets}×${t.aReps} @ ${fmtRest(t.aRest)}</div>
-          </div>
-        </div>
-        <div class="grid2" style="margin-top:12px;">
-          <div><label>Primary count</label><input type="number" id="${key}_pCount" min="1" max="6" value="${t.pCount}"></div>
-          <div><label>Aux count</label><input type="number" id="${key}_aCount" min="0" max="8" value="${t.aCount}"></div>
-          <div><label>Primary sets</label><input type="number" id="${key}_pSets" min="1" max="6" value="${t.pSets}"></div>
-          <div><label>Primary reps</label><input type="number" id="${key}_pReps" min="1" max="30" value="${t.pReps}"></div>
-          <div><label>Primary rest (sec)</label><input type="number" id="${key}_pRest" min="15" max="600" value="${t.pRest}"></div>
-          <div><label>Aux sets</label><input type="number" id="${key}_aSets" min="1" max="6" value="${t.aSets}"></div>
-          <div><label>Aux reps</label><input type="number" id="${key}_aReps" min="1" max="30" value="${t.aReps}"></div>
-          <div><label>Aux rest (sec)</label><input type="number" id="${key}_aRest" min="15" max="600" value="${t.aRest}"></div>
-        </div>
-      `;
-      return div;
-    };
-    host.appendChild(makeCard("light","Light"));
-    host.appendChild(makeCard("moderate","Moderate"));
-    host.appendChild(makeCard("intense","Intense"));
-  }
-
-  function openModal(id){ const el=$(id); if(el) el.style.display="block"; }
-  function closeModal(id){ const el=$(id); if(el) el.style.display="none"; }
-
-  // ----------------------------
-  // Favorites (per user)
-  // ----------------------------
-  const FAVS_KEY = "workout_favs_rebuild1";
-  let showFavsOnly = false;
-
-  function loadFavs(){ try{ return JSON.parse(localStorage.getItem(FAVS_KEY)||"{}") || {}; }catch(e){ return {}; } }
-  function saveFavs(o){ localStorage.setItem(FAVS_KEY, JSON.stringify(o)); }
-
-  function activeUser(){ return (($("userName")?.value)||"").trim() || "Default"; }
-
-  function getFavArrPrimary(user, group){
-    const all=loadFavs(); if(!all[user]) all[user]={primary:{},aux:{}}; if(!all[user].primary[group]) all[user].primary[group]=[];
-    return all[user].primary[group];
-  }
-  function getFavArrAux(user, group){
-    const all=loadFavs(); if(!all[user]) all[user]={primary:{},aux:{}}; if(!all[user].aux[group]) all[user].aux[group]=[];
-    return all[user].aux[group];
-  }
-  function setFavArrPrimary(user, group, arr){
-    const all=loadFavs(); if(!all[user]) all[user]={primary:{},aux:{}}; all[user].primary[group]=arr; saveFavs(all);
-  }
-  function setFavArrAux(user, group, arr){
-    const all=loadFavs(); if(!all[user]) all[user]={primary:{},aux:{}}; all[user].aux[group]=arr; saveFavs(all);
-  }
-  function sortWithFavs(list, favArr){
-    const favSet=new Set(favArr||[]);
-    const fav=[], rest=[];
-    (list||[]).forEach(x => (favSet.has(x)?fav:rest).push(x));
-    return showFavsOnly ? fav : fav.concat(rest);
-  }
-
-  // ----------------------------
-  // Profile settings
-  // ----------------------------
-  const SETTINGS_KEY = "workout_settings_rebuild1";
-  function loadSettings(){ return JSON.parse(localStorage.getItem(SETTINGS_KEY)||"{}") || {}; }
-  function saveSettings(o){ localStorage.setItem(SETTINGS_KEY, JSON.stringify(o)); }
-  function getUserSettings(user){
-    const all=loadSettings();
-    if(!all[user]){ all[user]={goal:"Hypertrophy",equipment:"Full gym",prefRepLow:6,prefRepHigh:12}; saveSettings(all); }
-    return all[user];
-  }
-  function setUserSettings(user, s){ const all=loadSettings(); all[user]=s; saveSettings(all); }
-
-  // ----------------------------
-  // Share via link
-  // ----------------------------
-  function b64uEnc(str){
-    const b64 = btoa(unescape(encodeURIComponent(str)));
-    return b64.replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/g,"");
-  }
-  function b64uDec(b64u){
-    let b64=b64u.replace(/-/g,"+").replace(/_/g,"/");
-    while(b64.length%4) b64+="=";
-    return decodeURIComponent(escape(atob(b64)));
-  }
-  function getDraft(){
-    return {
-      date: $("workoutDate").value || "",
-      userName: activeUser(),
-      primaryGroup: $("primaryGroup").value,
-      intensity: $("intensity").value,
-      notes: ($("notes").value||"").trim(),
-      primary: readRows($("primaryContainer"), "primary"),
-      aux: readRows($("auxContainer"), "aux")
-    };
-  }
-  function loadDraft(d){
-    if(d.date) $("workoutDate").value=d.date;
-    if(d.userName) $("userName").value=d.userName;
-    if(d.primaryGroup) $("primaryGroup").value=d.primaryGroup;
-    $("intensity").value="manual";
-    $("notes").value=d.notes||"";
-    $("primaryContainer").innerHTML="";
-    $("auxContainer").innerHTML="";
-    (d.primary||[]).forEach(x => addPrimaryRow({exerciseValue:x.exercise,setsValue:x.sets,repsValue:x.reps,restValue:x.restSec,weightValue:x.weight,setDetailsValue:x.setDetails}));
-    (d.aux||[]).forEach(x => addAuxRow({groupValue:x.group,exerciseValue:x.exercise,setsValue:x.sets,repsValue:x.reps,restValue:x.restSec,weightValue:x.weight,setDetailsValue:x.setDetails}));
-    updateCounts();
-  }
-  function importFromHash(){
-    const h=location.hash||"";
-    if(!h.startsWith("#w=")) return;
-    try{
-      const d=JSON.parse(b64uDec(h.slice(3)));
-      loadDraft(d);
-      history.replaceState(null, document.title, location.pathname+location.search);
-      toast("Shared workout loaded");
-    }catch(e){ toast("Bad share link"); }
-  }
-
 
   // ----------------------------
   // Events
@@ -1556,15 +1010,7 @@ if (!shownItems.length){
       if (!exInput || !exList) return;
 
       const list = primaryGroups[$("primaryGroup").value] ?? [];
-      const user = activeUser();
-      if (kind === "primary"){
-        const favArr = getFavArrPrimary(user, $("primaryGroup").value);
-        fillDataList(exList, sortWithFavs(list, favArr));
-      } else {
-        const g = groupSel ? groupSel.value : "";
-        const favArr = getFavArrAux(user, g);
-        fillDataList(exList, sortWithFavs(list, favArr));
-      }
+      fillDataList(exList, list);
 
       // If current value no longer matches, clear it so user re-selects
       if (exInput.value && !list.includes(exInput.value)) exInput.value = "";
@@ -1615,7 +1061,9 @@ if (!shownItems.length){
       intensity: intensityVal,
       intensityLabel,
       notes: ($("notes").value || "").trim(),
-      userName: ($("userName").value || "").trim() || "Default",      primary,
+      userName: ($("userName").value || "").trim() || "Default",
+      sessionLabel: ($("sessionLabel").value || "").trim(),
+      primary,
       aux,
       createdAt: new Date().toISOString()
     };
@@ -1671,7 +1119,6 @@ if (!shownItems.length){
   // Init
   // ----------------------------
   initGroupSelects();
-  importFromHash();
 
   // Set date default to today (local)
   const today = new Date();
@@ -1686,142 +1133,18 @@ if (!shownItems.length){
     if (u) $("userName").value = u;
     else $("userName").value = "Default";
   }catch(e){ $("userName").value = "Default"; }
-  
+  $("sessionLabel").value = "";
+
   // Start with one primary row
   addPrimaryRow();
   updateCounts();
   renderLog();
 
-});
-
-
-  function sampleUnique(arr, n){
-    const a=(arr||[]).slice();
-    for (let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; }
-    return a.slice(0, Math.min(n,a.length));
-  }
-
-  function buildRandomWorkout(){
-    const plan = templates["moderate"];
-    $("intensity").value="manual";
-    $("primaryContainer").innerHTML="";
-    $("auxContainer").innerHTML="";
-
-    const pg=$("primaryGroup").value;
-    const primPick = sampleUnique(primaryGroups[pg]||[], plan.pCount);
-
-    for (let i=0;i<plan.pCount;i++){
-      addPrimaryRow({setsValue:plan.pSets,repsValue:plan.pReps,restValue:plan.pRest,exerciseValue:primPick[i]||""});
-    }
-
-    const auxPlanByPrimary = {
-      "Chest": ["Triceps","Shoulders","Abs","Rear Delts","Forearms"],
-      "Back": ["Biceps","Rear Delts","Abs","Upper Back / Traps","Forearms"],
-      "Legs": ["Quads","Hamstrings","Calves","Abs","Forearms"],
-      "Shoulders": ["Rear Delts","Triceps","Abs","Upper Back / Traps","Biceps"],
-      "Arms": ["Biceps","Triceps","Forearms","Abs","Rear Delts"]
-    };
-    const auxOrder = auxPlanByPrimary[pg] || Object.keys(auxGroups);
-
-    for (let i=0;i<plan.aCount;i++){
-      const g = auxOrder[i % auxOrder.length];
-      const ex = sampleUnique(auxGroups[g]||[],1)[0] || "";
-      addAuxRow({groupValue:g,setsValue:plan.aSets,repsValue:plan.aReps,restValue:plan.aRest,exerciseValue:ex});
-    }
-
-    updateCounts();
-    toast("Random workout created");
-  }
-
-  // Event wiring (safe)
-  on("randomWorkoutBtn","click", () => buildRandomWorkout());
-  on("toggleFavsBtn","click", () => {
-    showFavsOnly = !showFavsOnly;
-    const b = $("toggleFavsBtn");
-    if (b) b.textContent = showFavsOnly ? "⭐ Favorites (only)" : "⭐ Favorites";
-    // Refresh lists for current rows
-    Array.from($("primaryContainer").children).forEach(row => {
-      const dl=row.querySelector("datalist");
-      if(!dl) return;
-      const list = primaryGroups[$("primaryGroup").value] || [];
-      const favArr = getFavArrPrimary(activeUser(), $("primaryGroup").value);
-      fillDataList(dl, sortWithFavs(list, favArr));
-    });
-    Array.from($("auxContainer").children).forEach(row => {
-      const dl=row.querySelector("datalist");
-      const gSel=row.querySelector(".auxGroupSel");
-      if(!dl || !gSel) return;
-      const list = auxGroups[gSel.value] || [];
-      const favArr = getFavArrAux(activeUser(), gSel.value);
-      fillDataList(dl, sortWithFavs(list, favArr));
-    });
-    toast(showFavsOnly ? "Favorites only" : "Favorites + all");
-  });
-
-  // Templates modal handlers
-  on("editTemplatesBtn","click", () => { renderTemplatesEditor(); openModal("templatesModal"); });
-  on("closeTemplatesBtn","click", () => closeModal("templatesModal"));
-  on("saveTemplatesBtn","click", () => {
-    const read = (k) => ({
-      pCount: clampInt($(k+"_pCount").value, 1, 6, templates[k].pCount),
-      aCount: clampInt($(k+"_aCount").value, 0, 8, templates[k].aCount),
-      pSets:  clampInt($(k+"_pSets").value, 1, 6, templates[k].pSets),
-      pReps:  clampInt($(k+"_pReps").value, 1, 30, templates[k].pReps),
-      pRest:  clampInt($(k+"_pRest").value, 15, 600, templates[k].pRest),
-      aSets:  clampInt($(k+"_aSets").value, 1, 6, templates[k].aSets),
-      aReps:  clampInt($(k+"_aReps").value, 1, 30, templates[k].aReps),
-      aRest:  clampInt($(k+"_aRest").value, 15, 600, templates[k].aRest)
-    });
-    templates = { light: read("light"), moderate: read("moderate"), intense: read("intense") };
-    saveTemplates(templates);
-    closeModal("templatesModal");
-    toast("Templates saved");
-  });
-  on("resetTemplatesBtn","click", () => { templates = clone(DEFAULT_TEMPLATES); saveTemplates(templates); toast("Templates reset"); });
-
-  // Profile handlers
-  on("profileBtn","click", () => {
-    const u=activeUser();
-    const s=getUserSettings(u);
-    $("profileGoal").value=s.goal || "Hypertrophy";
-    $("profileEquipment").value=s.equipment || "Full gym";
-    $("profileRepLow").value=s.prefRepLow ?? 6;
-    $("profileRepHigh").value=s.prefRepHigh ?? 12;
-    openModal("profileModal");
-  });
-  on("closeProfileBtn","click", () => closeModal("profileModal"));
-  on("saveProfileBtn","click", () => {
-    const u=activeUser();
-    const next = {
-      goal: $("profileGoal").value,
-      equipment: $("profileEquipment").value,
-      prefRepLow: clampInt($("profileRepLow").value, 1, 30, 6),
-      prefRepHigh: clampInt($("profileRepHigh").value, 1, 30, 12)
-    };
-    if (next.prefRepHigh < next.prefRepLow) next.prefRepHigh = next.prefRepLow;
-    setUserSettings(u, next);
-    closeModal("profileModal");
-    toast("Profile saved");
-  });
-
-  // Share handlers
-  on("shareBtn","click", () => {
-    const d=getDraft();
-    if (!d.primary || !d.primary.length){ toast("Add at least 1 primary"); return; }
-    const link = `${location.origin}${location.pathname}#w=${b64uEnc(JSON.stringify(d))}`;
-    $("shareLink").value = link;
-    openModal("shareModal");
-  });
-  on("closeShareBtn","click", () => closeModal("shareModal"));
-  on("copyShareBtn","click", async () => {
-    try{ await navigator.clipboard.writeText($("shareLink").value||""); toast("Copied"); }
-    catch(e){ toast("Copy blocked"); }
-  });
-
+})();
 </script>
 
   <div id="revFooter" style="position:fixed;left:12px;bottom:10px;z-index:50;font-size:11px;opacity:.55;">
-    Rev rebuild2 • Build 2026-02-24 02:49:35
+    Rev v8 • Build 2026-02-24 01:28:43
   </div>
 
 </body>
