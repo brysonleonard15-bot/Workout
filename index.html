@@ -292,11 +292,7 @@
             <label for="userName">User</label>
             <input id="userName" type="text" placeholder="e.g., Bryson" />
           </div>
-          <div>
-            <label for="sessionLabel">Session label (optional)</label>
-            <input id="sessionLabel" type="text" placeholder="e.g., Push A, Pull B, Leg Day" />
-          </div>
-        </div>
+</div>
 
         <div class="divider"></div>
 
@@ -1498,9 +1494,7 @@
     const aux = readRows($("auxContainer"), "aux");
     const draft = {
       date,
-      userName: ($("userName").value || "").trim() || "Default",
-      sessionLabel: ($("sessionLabel").value || "").trim(),
-      primaryGroup: $("primaryGroup").value,
+      userName: ($("userName").value || "").trim() || "Default",      primaryGroup: $("primaryGroup").value,
       intensity: $("intensity").value,
       intensityLabel: {
         manual:"Manual",
@@ -1560,9 +1554,7 @@
       const draft = JSON.parse(json);
 
       if (draft.date) $("workoutDate").value = draft.date;
-      if (draft.userName) $("userName").value = draft.userName;
-      $("sessionLabel").value = draft.sessionLabel || "";
-      if (draft.primaryGroup) $("primaryGroup").value = draft.primaryGroup;
+      if (draft.userName) $("userName").value = draft.userName;      if (draft.primaryGroup) $("primaryGroup").value = draft.primaryGroup;
       $("intensity").value = "manual";
       $("notes").value = draft.notes || "";
 
@@ -1737,7 +1729,7 @@ if (!shownItems.length){
 
       const left = document.createElement("div");
       const h3 = document.createElement("h3");
-      h3.textContent = `${item.date} — ${item.primaryGroup}${item.sessionLabel ? " • " + item.sessionLabel : ""}`;
+      h3.textContent = `${item.date} — ${item.primaryGroup}`;
       const meta = document.createElement("div");
       meta.className = "meta";
       meta.textContent = `${item.userName || "Default"} • ${item.intensityLabel}${item.prUpdates && item.prUpdates.length ? " • PR: " + item.prUpdates.slice(0,2).join(", ") : ""}${item.notes ? " • Notes included" : ""}`;
@@ -1817,8 +1809,6 @@ if (!shownItems.length){
     $("primaryGroup").value = item.primaryGroup;
     $("notes").value = item.notes || "";
     $("userName").value = item.userName || "Default";
-    $("sessionLabel").value = item.sessionLabel || "";
-
     $("primaryContainer").innerHTML = "";
     $("auxContainer").innerHTML = "";
 
@@ -1972,9 +1962,7 @@ if (!shownItems.length){
       intensity: intensityVal,
       intensityLabel,
       notes: ($("notes").value || "").trim(),
-      userName: ($("userName").value || "").trim() || "Default",
-      sessionLabel: ($("sessionLabel").value || "").trim(),
-      primary,
+      userName: ($("userName").value || "").trim() || "Default",      primary,
       aux,
       createdAt: new Date().toISOString()
     };
@@ -2288,8 +2276,7 @@ if (!shownItems.length){
     if (u) $("userName").value = u;
     else $("userName").value = "Default";
   }catch(e){ $("userName").value = "Default"; }
-  $("sessionLabel").value = "";
-
+  
   // Import shared workout if link contains one
   importSharedWorkoutFromHash();
 
@@ -2302,7 +2289,7 @@ if (!shownItems.length){
 </script>
 
   <div id="revFooter" style="position:fixed;left:12px;bottom:10px;z-index:50;font-size:11px;opacity:.55;">
-    Rev v13 • Build 2026-02-24 01:28:43
+    Rev v14 • Build 2026-02-24 02:16:17
   </div>
 
 </body>
