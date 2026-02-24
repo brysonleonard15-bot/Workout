@@ -268,6 +268,19 @@
           <div>
             <label for="primaryGroup">Primary workout group</label>
             <select id="primaryGroup"></select>
+            <div style="margin-top:12px;">
+              <label for="dayPreset">Day preset</label>
+              <select id="dayPreset">
+                <option value="custom">Custom</option>
+                <option value="chest_tris">Chest + Triceps</option>
+                <option value="back_bis">Back + Biceps</option>
+                <option value="legs_calves">Legs + Calves</option>
+                <option value="shoulders_abs">Shoulders + Abs</option>
+                <option value="arms">Arms</option>
+              </select>
+              <div class="hint">Pick a common split to auto-set primary + suggested auxiliary focus.</div>
+            </div>
+
             <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:10px;">
               <button type="button" class="btn" id="randomWorkoutBtn">🎲 Random workout</button>
               <button type="button" class="btn" id="toggleFavsBtn">⭐ Favorites</button>
@@ -1101,6 +1114,19 @@ if (!shownItems.length){
     $("intensity").value = "manual";
     $("primaryGroup").value = item.primaryGroup;
     $("notes").value = item.notes || "";
+    try{
+      if (item.extraAbs){
+        $("extraAbsExercise").value = item.extraAbs.exercise || "";
+        $("extraAbsSets").value = String(item.extraAbs.sets || "3");
+        $("extraAbsReps").value = String(item.extraAbs.reps || "15");
+      }
+      if (item.cardio){
+        $("cardioType").value = item.cardio.type || "";
+        $("cardioMinutes").value = String(item.cardio.minutes || "20");
+        $("cardioIntensity").value = item.cardio.intensity || "Easy (Zone 2)";
+      }
+    }catch(e){}
+
     $("userName").value = item.userName || "Default";
     $("primaryContainer").innerHTML = "";
     $("auxContainer").innerHTML = "";
@@ -1189,6 +1215,16 @@ if (!shownItems.length){
       intensity: intensityVal,
       intensityLabel,
       notes: ($("notes").value || "").trim(),
+      extraAbs: {
+        exercise: ($("extraAbsExercise").value || "").trim(),
+        sets: $("extraAbsSets").value || "",
+        reps: $("extraAbsReps").value || ""
+      },
+      cardio: {
+        type: $("cardioType").value || "",
+        minutes: $("cardioMinutes").value || "",
+        intensity: $("cardioIntensity").value || ""
+      },
       userName: ($("userName").value || "").trim() || "Default",      primary,
       aux,
       createdAt: new Date().toISOString()
@@ -1296,29 +1332,39 @@ if (!shownItems.length){
       return a.slice(0, Math.min(n, a.length));
     };
 
-    // Recommended aux groups by primary
-    const auxPlanByPrimary = {
-      "Chest": ["Triceps", "Shoulders", "Abs", "Chest", "Forearms"],
-      "Back": ["Biceps", "Rear Delts", "Abs", "Upper Back / Traps", "Forearms"],
-      "Legs": ["Quads", "Hamstrings", "Calves", "Abs", "Forearms"],
-      "Shoulders": ["Rear Delts", "Triceps", "Abs", "Upper Back / Traps", "Biceps"],
-      "Arms": ["Biceps", "Triceps", "Forearms", "Abs", "Chest"]
-    };
-    const auxOrder = auxPlanByPrimary[primaryGroup] || Object.keys(auxGroups);
+    const presetKey = $("dayPreset")?.value || "custom";
+    const preset = dayPresets[presetKey] || dayPresets.custom;
 
-    // Primary picks
+    const auxPlanByPrimary = {
+      "Chest": ["Triceps", "Shoulders", "Chest"],
+      "Back": ["Biceps", "Rear Delts", "Upper Back / Traps"],
+      "Legs": ["Quads", "Hamstrings", "Calves"],
+      "Shoulders": ["Rear Delts", "Triceps", "Upper Back / Traps"],
+      "Arms": ["Biceps", "Triceps", "Forearms"]
+    };
+
+    const baseAuxOrder = (preset.auxOrder && preset.auxOrder.length) ? preset.auxOrder : (auxPlanByPrimary[primaryGroup] || Object.keys(auxGroups));
+    const auxOrder = baseAuxOrder.slice();
+
     const primPick = sampleUnique(primList, plan.pCount);
     for (let i=0; i<plan.pCount; i++){
       addPrimaryRow({ setsValue: plan.pSets, repsValue: plan.pReps, restValue: plan.pRest, exerciseValue: primPick[i] || "" });
     }
 
-    // Aux rows
     for (let i=0; i<plan.aCount; i++){
       const g = auxOrder[i % auxOrder.length];
       const exList = auxGroups[g] ?? [];
       const ex = sampleUnique(exList, 1)[0] || "";
       addAuxRow({ groupValue: g, exerciseValue: ex, setsValue: plan.aSets, repsValue: plan.aReps, restValue: plan.aRest });
     }
+
+    // Always add an Abs row as an extra aux workout
+    const absList = auxGroups["Abs"] ?? [];
+    const absEx = sampleUnique(absList, 1)[0] || "";
+    addAuxRow({ groupValue: "Abs", exerciseValue: absEx, setsValue: 3, repsValue: 15, restValue: 60 });
+
+    // Auto-populate add-ons
+    autoFillAbsAndCardio(primaryGroup);
 
     updateCounts();
     toast("Random workout created");
@@ -1432,11 +1478,122 @@ if (!shownItems.length){
     }
   });
 
+  // ----------------------------
+  // Day presets + Abs/Cardio add-ons
+  // ----------------------------
+  const dayPresets = {
+    custom: { primary: null, auxOrder: [] },
+    chest_tris: { primary: "Chest", auxOrder: ["Triceps", "Chest", "Abs"] },
+    back_bis: { primary: "Back", auxOrder: ["Biceps", "Rear Delts", "Abs"] },
+    legs_calves: { primary: "Legs", auxOrder: ["Calves", "Hamstrings", "Quads", "Abs"] },
+    shoulders_abs: { primary: "Shoulders", auxOrder: ["Rear Delts", "Triceps", "Abs"] },
+    arms: { primary: "Arms", auxOrder: ["Biceps", "Triceps", "Forearms", "Abs"] }
+  };
+
+  function fillNumSelect(sel, from, to, defVal){
+    if (!sel) return;
+    sel.innerHTML = "";
+    for (let i=from; i<=to; i++){
+      const o = document.createElement("option");
+      o.value = String(i);
+      o.textContent = String(i);
+      sel.appendChild(o);
+    }
+    sel.value = String(defVal);
+  }
+
+  function initAbsCardioControls(){
+    
+    const absSelect = $("extraAbsExercise");
+    if (absSelect){
+      absSelect.innerHTML = "";
+      (auxGroups["Abs"] || []).forEach(v => {
+        const o = document.createElement("option");
+        o.value = v;
+        o.textContent = v;
+        absSelect.appendChild(o);
+      });
+    }
+    fillNumSelect($("extraAbsSets"), 1, 6, 3);
+
+    const repsSel = $("extraAbsReps");
+    if (repsSel){
+      repsSel.innerHTML = "";
+      [8,10,12,15,20,25,30].forEach(v => {
+        const o = document.createElement("option");
+        o.value = String(v);
+        o.textContent = String(v);
+        repsSel.appendChild(o);
+      });
+      repsSel.value = "15";
+    }
+
+    const cm = $("cardioMinutes");
+    if (cm){
+      cm.innerHTML = "";
+      [0,10,12,15,20,25,30,35,40].forEach(v => {
+        const o = document.createElement("option");
+        o.value = String(v);
+        o.textContent = v===0 ? "—" : String(v);
+        cm.appendChild(o);
+      });
+      cm.value = "20";
+    }
+    if ($("cardioIntensity")) $("cardioIntensity").value = "Easy (Zone 2)";
+  }
+
+  function applyDayPreset(){
+    const key = $("dayPreset")?.value || "custom";
+    const preset = dayPresets[key] || dayPresets.custom;
+    if (preset.primary){
+      $("primaryGroup").value = preset.primary;
+      $("primaryGroup").dispatchEvent(new Event("change"));
+    }
+    toast(key === "custom" ? "Custom day" : "Preset applied");
+  }
+
+  $("dayPreset").addEventListener("change", () => applyDayPreset());
+
+  function autoFillAbsAndCardio(primaryGroup){
+    const absOptions = auxGroups["Abs"] || [];
+    if ($("extraAbsExercise")){
+      $("extraAbsExercise").value = absOptions.length ? absOptions[Math.floor(Math.random()*absOptions.length)] : "";
+    }
+    if ($("extraAbsSets")) $("extraAbsSets").value = "3";
+    if ($("extraAbsReps")) $("extraAbsReps").value = "15";
+
+    if (!primaryGroup) primaryGroup = $("primaryGroup").value;
+    let type = "Incline Treadmill Walk";
+    let minutes = "20";
+    let intensity = "Easy (Zone 2)";
+
+    if (primaryGroup === "Legs"){
+      type = "Stationary Bike";
+      minutes = "15";
+      intensity = "Easy (Zone 2)";
+    } else if (primaryGroup === "Back"){
+      type = "Row Erg";
+      minutes = "12";
+      intensity = "Moderate";
+    } else if (primaryGroup === "Arms"){
+      type = "Outdoor Walk";
+      minutes = "20";
+      intensity = "Easy (Zone 2)";
+    }
+
+    if ($("cardioType")) $("cardioType").value = type;
+    if ($("cardioMinutes")) $("cardioMinutes").value = minutes;
+    if ($("cardioIntensity")) $("cardioIntensity").value = intensity;
+  }
+
 
   // ----------------------------
   // Init
   // ----------------------------
   initGroupSelects();
+  initAbsCardioControls();
+  autoFillAbsAndCardio($("primaryGroup").value);
+
 
   // Set date default to today (local)
   const today = new Date();
@@ -1470,7 +1627,7 @@ if (!shownItems.length){
   </div>
 
   <div id="revFooter" style="position:fixed;left:12px;bottom:10px;z-index:50;font-size:11px;opacity:.55;">
-    Rev v12 • Build 2026-02-24 03:25:53
+    Rev v14 • Build 2026-02-24 17:53:39
   </div>
 
 </body>
