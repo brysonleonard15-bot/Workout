@@ -505,7 +505,50 @@
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
+
 <script>
+// --- Diagnostics / crash protection ---
+document.addEventListener('DOMContentLoaded', function(){
+  function showError(msg){
+    try{
+      var el = document.getElementById("fatalError");
+      if (!el){
+        el = document.createElement("div");
+        el.id = "fatalError";
+        el.style.position = "fixed";
+        el.style.left = "12px";
+        el.style.right = "12px";
+        el.style.bottom = "46px";
+        el.style.zIndex = "9999";
+        el.style.padding = "12px 14px";
+        el.style.borderRadius = "14px";
+        el.style.background = "rgba(255,91,110,.18)";
+        el.style.border = "1px solid rgba(255,91,110,.35)";
+        el.style.color = "rgba(233,238,252,1)";
+        el.style.fontSize = "12.5px";
+        el.style.lineHeight = "1.35";
+        el.style.boxShadow = "0 18px 40px rgba(0,0,0,.45)";
+        document.body.appendChild(el);
+      }
+      el.textContent = msg;
+    }catch(e){}
+  }
+
+  window.addEventListener("error", function(e){
+    showError("Script error: " + (e && e.message ? e.message : "unknown") + " (see console)");
+  });
+
+  window.addEventListener("unhandledrejection", function(e){
+    var msg = (e && e.reason && e.reason.message) ? e.reason.message : String(e.reason || "unknown");
+    showError("Promise error: " + msg + " (see console)");
+  });
+
+  // Expose for internal use
+  window.__showWorkoutLogError = showError;
+})();
+</script>
+<script>
+// --- App ---
 (function(){
   const BUILD_VERSION = "2026-02-24 01:19:08";
   console.log("Workout Log Build:", BUILD_VERSION);
@@ -918,6 +961,12 @@
   // DOM helpers
   // ----------------------------
   const $ = (id) => document.getElementById(id);
+
+  const on = (id, evt, fn) => {
+    const el = $(id);
+    if (!el) { try{ window.__showWorkoutLogError && window.__showWorkoutLogError("Missing element: #" + id); }catch(e){}; return; }
+    el.addEventListener(evt, fn);
+  };
 
   const toast = (msg) => {
     const t = $("toast");
@@ -1520,7 +1569,7 @@
     $("shareModal").style.display = "none";
   }
 
-  $("shareBtn").addEventListener("click", () => {
+  on("shareBtn", "click", () => {
     const draft = getCurrentWorkoutDraft();
     if (!draft.primary.length){
       toast("Add at least 1 primary exercise");
@@ -1532,9 +1581,9 @@
     toast("Share link ready");
   });
 
-  $("closeShareBtn").addEventListener("click", () => closeShareModal());
+  on("closeShareBtn", "click", () => closeShareModal());
 
-  $("copyShareBtn").addEventListener("click", async () => {
+  on("copyShareBtn", "click", async () => {
     try{
       await navigator.clipboard.writeText($("shareLink").value || "");
       toast("Copied");
@@ -1543,7 +1592,7 @@
     }
   });
 
-  $("shareModal").addEventListener("click", (e) => {
+  on("shareModal", "click", (e) => {
     if (e.target === $("shareModal")) closeShareModal();
   });
 
@@ -1882,10 +1931,10 @@ if (!shownItems.length){
   // ----------------------------
   // Events
   // ----------------------------
-  $("addPrimaryBtn").addEventListener("click", () => addPrimaryRow());
-  $("addAuxBtn").addEventListener("click", () => addAuxRow());
+  on("addPrimaryBtn", "click", () => addPrimaryRow());
+  on("addAuxBtn", "click", () => addAuxRow());
 
-  $("primaryGroup").addEventListener("change", () => {
+  on("primaryGroup", "change", () => {
     // When primary group changes, refresh all primary exercise datalists
     Array.from($("primaryContainer").children).forEach(row => {
       const exInput = row.querySelector(".exerciseInput");
@@ -1920,12 +1969,12 @@ if (!shownItems.length){
     }catch(e){}
   });
 
-  $("intensity").addEventListener("change", (e) => {
+  on("intensity", "change", (e) => {
     applyTemplate(e.target.value);
     updateCounts();
   });
 
-  $("resetBtn").addEventListener("click", () => {
+  on("resetBtn", "click", () => {
     $("intensity").value = "manual";
     $("notes").value = "";
     $("primaryContainer").innerHTML = "";
@@ -1935,7 +1984,7 @@ if (!shownItems.length){
     toast("Reset");
   });
 
-  $("saveBtn").addEventListener("click", () => {
+  on("saveBtn", "click", () => {
     const date = $("workoutDate").value;
     if (!date){
       toast("Pick a date first");
@@ -2008,25 +2057,25 @@ if (!shownItems.length){
 
   });
 
-  $("clearBtn").addEventListener("click", () => {
+  on("clearBtn", "click", () => {
     if (!confirm("Clear ALL saved workouts from this browser?")) return;
     localStorage.removeItem(STORAGE_KEY);
     renderLog();
     toast("Cleared");
   });
 
-  $("exportBtn").addEventListener("click", () => {
+  on("exportBtn", "click", () => {
     const items = loadLog();
     $("exportText").value = JSON.stringify(items, null, 2);
     $("exportBox").style.display = "block";
     toast("Export ready");
   });
 
-  $("hideExportBtn").addEventListener("click", () => {
+  on("hideExportBtn", "click", () => {
     $("exportBox").style.display = "none";
   });
 
-  $("copyExportBtn").addEventListener("click", async () => {
+  on("copyExportBtn", "click", async () => {
     try{
       await navigator.clipboard.writeText($("exportText").value || "");
       toast("Copied");
@@ -2035,12 +2084,12 @@ if (!shownItems.length){
     }
   });
   // User filter events
-  $("logUserFilter").addEventListener("change", () => {
+  on("logUserFilter", "change", () => {
     renderLog();
     toast("Filtered");
   });
 
-  $("clearUserFilterBtn").addEventListener("click", () => {
+  on("clearUserFilterBtn", "click", () => {
     $("logUserFilter").value = "__all__";
     renderLog();
     toast("All users");
@@ -2159,14 +2208,14 @@ if (!shownItems.length){
     };
   }
 
-  $("editTemplatesBtn").addEventListener("click", () => {
+  on("editTemplatesBtn", "click", () => {
     openTemplatesModal();
     toast("Edit templates");
   });
 
-  $("closeTemplatesBtn").addEventListener("click", () => closeTemplatesModal());
+  on("closeTemplatesBtn", "click", () => closeTemplatesModal());
 
-  $("saveTemplatesBtn").addEventListener("click", () => {
+  on("saveTemplatesBtn", "click", () => {
     const next = readTemplatesFromEditor();
     templates = next;
     saveTemplates(next);
@@ -2174,23 +2223,23 @@ if (!shownItems.length){
     toast("Templates saved");
   });
 
-  $("resetTemplatesBtn").addEventListener("click", () => {
+  on("resetTemplatesBtn", "click", () => {
     templates = sClone(DEFAULT_TEMPLATES);
     saveTemplates(templates);
     toast("Templates reset");
   });
 
-  $("addTemplateNoteBtn").addEventListener("click", () => {
+  on("addTemplateNoteBtn", "click", () => {
     const n = $("templateNote");
     n.style.display = (n.style.display === "none") ? "block" : "none";
   });
 
   // Close modal on background click
-  $("templatesModal").addEventListener("click", (e) => {
+  on("templatesModal", "click", (e) => {
     if (e.target === $("templatesModal")) closeTemplatesModal();
   });
 
-  $("toggleFavsBtn").addEventListener("click", () => {
+  on("toggleFavsBtn", "click", () => {
     showFavsOnly = !showFavsOnly;
     $("toggleFavsBtn").textContent = showFavsOnly ? "⭐ Favorites (only)" : "⭐ Favorites";
 
@@ -2229,9 +2278,9 @@ if (!shownItems.length){
   }
   function closeProfile(){ $("profileModal").style.display = "none"; }
 
-  $("profileBtn").addEventListener("click", () => { openProfile(); toast("Profile"); });
-  $("closeProfileBtn").addEventListener("click", () => closeProfile());
-  $("saveProfileBtn").addEventListener("click", () => {
+  on("profileBtn", "click", () => { openProfile(); toast("Profile"); });
+  on("closeProfileBtn", "click", () => closeProfile());
+  on("saveProfileBtn", "click", () => {
     const user = getActiveUser();
     const next = {
       goal: $("profileGoal").value,
@@ -2244,7 +2293,7 @@ if (!shownItems.length){
     closeProfile();
     toast("Profile saved");
   });
-  $("profileModal").addEventListener("click", (e) => { if (e.target === $("profileModal")) closeProfile(); });
+  on("profileModal", "click", (e) => { if (e.target === $("profileModal")) closeProfile(); });
 
   function setPerfMode(on){
     document.body.classList.toggle("perf", !!on);
@@ -2253,7 +2302,7 @@ if (!shownItems.length){
     saveObj(UI_KEY, ui);
   }
 
-  $("perfModeBtn").addEventListener("click", () => {
+  on("perfModeBtn", "click", () => {
     const on = !document.body.classList.contains("perf");
     setPerfMode(on);
     toast(on ? "Performance mode" : "Normal mode");
@@ -2291,7 +2340,7 @@ if (!shownItems.length){
 </script>
 
   <div id="revFooter" style="position:fixed;left:12px;bottom:10px;z-index:50;font-size:11px;opacity:.55;">
-    Rev v15 • Build 2026-02-24 02:27:40
+    Rev v16 • Build 2026-02-24 02:34:41
   </div>
 
 </body>
