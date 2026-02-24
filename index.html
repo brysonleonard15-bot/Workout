@@ -920,11 +920,12 @@
 
     // Suggested auxiliary group stacks by primary group
     const auxPlanByPrimary = {
-      "Chest": ["Triceps", "Shoulders", "Abs", "Rear Delts", "Forearms"],
-      "Back": ["Biceps", "Rear Delts", "Abs", "Upper Back / Traps", "Forearms"],
-      "Legs": ["Quads", "Hamstrings", "Calves", "Abs", "Forearms"],
-      "Shoulders": ["Rear Delts", "Triceps", "Abs", "Upper Back / Traps", "Biceps"],
-      "Arms": ["Biceps", "Triceps", "Forearms", "Abs", "Rear Delts"]
+      // Only main/secondary groups here. Abs is added separately as an extra.
+      "Chest": ["Triceps", "Shoulders", "Chest"],
+      "Back": ["Biceps", "Rear Delts", "Upper Back / Traps"],
+      "Legs": ["Quads", "Hamstrings", "Calves"],
+      "Shoulders": ["Triceps", "Rear Delts", "Upper Back / Traps"],
+      "Arms": ["Biceps", "Triceps", "Forearms"]
     };
 
     const auxGroupsOrder = auxPlanByPrimary[primaryGroup] || Object.keys(auxGroups);
@@ -1361,7 +1362,7 @@ if (!shownItems.length){
     // Always add an Abs row as an extra aux workout
     const absList = auxGroups["Abs"] ?? [];
     const absEx = sampleUnique(absList, 1)[0] || "";
-    addAuxRow({ groupValue: "Abs", exerciseValue: absEx, setsValue: 3, repsValue: 15, restValue: 60 });
+    addAuxRow({ groupValue: "Abs", exerciseValue: absEx, setsValue: 4, repsValue: 20, restValue: 45 });
 
     // Auto-populate add-ons
     autoFillAbsAndCardio(primaryGroup);
@@ -1483,11 +1484,11 @@ if (!shownItems.length){
   // ----------------------------
   const dayPresets = {
     custom: { primary: null, auxOrder: [] },
-    chest_tris: { primary: "Chest", auxOrder: ["Triceps", "Chest", "Abs"] },
-    back_bis: { primary: "Back", auxOrder: ["Biceps", "Rear Delts", "Abs"] },
-    legs_calves: { primary: "Legs", auxOrder: ["Calves", "Hamstrings", "Quads", "Abs"] },
-    shoulders_abs: { primary: "Shoulders", auxOrder: ["Rear Delts", "Triceps", "Abs"] },
-    arms: { primary: "Arms", auxOrder: ["Biceps", "Triceps", "Forearms", "Abs"] }
+    chest_tris: { primary: "Chest", auxOrder: ["Triceps", "Chest", "Shoulders"] },
+    back_bis: { primary: "Back", auxOrder: ["Biceps", "Rear Delts", "Upper Back / Traps"] },
+    legs_calves: { primary: "Legs", auxOrder: ["Calves", "Hamstrings", "Quads"] },
+    shoulders_abs: { primary: "Shoulders", auxOrder: ["Rear Delts", "Triceps", "Upper Back / Traps"] },
+    arms: { primary: "Arms", auxOrder: ["Biceps", "Triceps", "Forearms"] }
   };
 
   function fillNumSelect(sel, from, to, defVal){
@@ -1525,7 +1526,7 @@ if (!shownItems.length){
         o.textContent = String(v);
         repsSel.appendChild(o);
       });
-      repsSel.value = "15";
+      repsSel.value = "20";
     }
 
     const cm = $("cardioMinutes");
@@ -1559,8 +1560,8 @@ if (!shownItems.length){
     if ($("extraAbsExercise")){
       $("extraAbsExercise").value = absOptions.length ? absOptions[Math.floor(Math.random()*absOptions.length)] : "";
     }
-    if ($("extraAbsSets")) $("extraAbsSets").value = "3";
-    if ($("extraAbsReps")) $("extraAbsReps").value = "15";
+    if ($("extraAbsSets")) $("extraAbsSets").value = "4";
+    if ($("extraAbsReps")) $("extraAbsReps").value = "20";
 
     if (!primaryGroup) primaryGroup = $("primaryGroup").value;
     let type = "Incline Treadmill Walk";
@@ -1627,7 +1628,7 @@ if (!shownItems.length){
   </div>
 
   <div id="revFooter" style="position:fixed;left:12px;bottom:10px;z-index:50;font-size:11px;opacity:.55;">
-    Rev v14 • Build 2026-02-24 17:53:39
+    Rev v15 • Build 2026-02-24 17:58:46
   </div>
 
 </body>
