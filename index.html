@@ -448,6 +448,14 @@
       "Spider Curl",
       "EZ-Bar Reverse Curl"
     ],
+    "Chest": [
+      "Cable Fly (High-to-Low)",
+      "Cable Fly (Low-to-High)",
+      "Pec Deck / Machine Fly",
+      "Machine Chest Press",
+      "Dumbbell Fly (Flat/Incline)",
+      "Push-Up (Slow Tempo)"
+    ],
     "Triceps": [
       "Overhead Cable Extension",
       "Rope Pressdown",
@@ -467,13 +475,21 @@
     ],
     "Abs": [
       "Cable Crunch",
+      "Kneeling Cable Crunch",
+      "Machine Crunch",
       "Hanging Knee Raise",
       "Hanging Leg Raise",
+      "Captain\'s Chair Knee Raise",
       "Ab Wheel Rollout",
+      "Stability Ball Rollout",
+      "Reverse Crunch",
+      "V-Up",
+      "Dead Bug (Controlled)",
+      "Hollow Hold (Timed)",
       "Plank (Timed)",
       "Side Plank (Timed)",
-      "Dead Bug (Controlled)",
-      "Pallof Press"
+      "Pallof Press",
+      "Suitcase Carry (Timed)"
     ],
     "Forearms": [
       "Wrist Curl",
@@ -1261,7 +1277,8 @@ if (!shownItems.length){
   }
 
   function buildRandomWorkout(){
-    const plan = templates["moderate"]; // sensible default structure
+    // Moderate structure
+    const plan = { pCount: 2, aCount: 3, pSets: 3, pReps: 10, pRest: 150, aSets: 3, aReps: 12, aRest: 90 };
 
     $("intensity").value = "manual";
     $("primaryContainer").innerHTML = "";
@@ -1269,24 +1286,30 @@ if (!shownItems.length){
 
     const primaryGroup = $("primaryGroup").value;
     const primList = primaryGroups[primaryGroup] ?? [];
-    const primPick = sampleUnique(primList, plan.pCount);
 
-    // Recommended aux pairings
+    const sampleUnique = (arr, n) => {
+      const a = (arr || []).slice();
+      for (let i=a.length-1; i>0; i--){
+        const j = Math.floor(Math.random() * (i+1));
+        [a[i], a[j]] = [a[j], a[i]];
+      }
+      return a.slice(0, Math.min(n, a.length));
+    };
+
+    // Recommended aux groups by primary
     const auxPlanByPrimary = {
-      "Chest": ["Triceps", "Shoulders", "Abs", "Rear Delts", "Forearms"],
+      "Chest": ["Triceps", "Shoulders", "Abs", "Chest", "Forearms"],
       "Back": ["Biceps", "Rear Delts", "Abs", "Upper Back / Traps", "Forearms"],
       "Legs": ["Quads", "Hamstrings", "Calves", "Abs", "Forearms"],
       "Shoulders": ["Rear Delts", "Triceps", "Abs", "Upper Back / Traps", "Biceps"],
-      "Arms": ["Biceps", "Triceps", "Forearms", "Abs", "Rear Delts"]
+      "Arms": ["Biceps", "Triceps", "Forearms", "Abs", "Chest"]
     };
     const auxOrder = auxPlanByPrimary[primaryGroup] || Object.keys(auxGroups);
 
-    // Primary rows
+    // Primary picks
+    const primPick = sampleUnique(primList, plan.pCount);
     for (let i=0; i<plan.pCount; i++){
-      addPrimaryRow({ setsValue: plan.pSets, repsValue: plan.pReps, restValue: plan.pRest });
-      const row = $("primaryContainer").lastElementChild;
-      const inp = row ? row.querySelector(".exerciseInput") : null;
-      if (inp) inp.value = primPick[i] || "";
+      addPrimaryRow({ setsValue: plan.pSets, repsValue: plan.pReps, restValue: plan.pRest, exerciseValue: primPick[i] || "" });
     }
 
     // Aux rows
@@ -1294,20 +1317,7 @@ if (!shownItems.length){
       const g = auxOrder[i % auxOrder.length];
       const exList = auxGroups[g] ?? [];
       const ex = sampleUnique(exList, 1)[0] || "";
-
-      addAuxRow({ groupValue: g, setsValue: plan.aSets, repsValue: plan.aReps, restValue: plan.aRest });
-      const row = $("auxContainer").lastElementChild;
-      if (row){
-        const gSel = row.querySelector(".auxGroupSel");
-        const inp = row.querySelector(".exerciseInput");
-        const dl = row.querySelector("datalist");
-        if (gSel) gSel.value = g;
-        if (dl){
-          const favArr = getFavArr("aux", g);
-          fillDataList(dl, sortWithFavs(auxGroups[g] ?? [], favArr));
-        }
-        if (inp) inp.value = ex;
-      }
+      addAuxRow({ groupValue: g, exerciseValue: ex, setsValue: plan.aSets, repsValue: plan.aReps, restValue: plan.aRest });
     }
 
     updateCounts();
@@ -1460,7 +1470,7 @@ if (!shownItems.length){
   </div>
 
   <div id="revFooter" style="position:fixed;left:12px;bottom:10px;z-index:50;font-size:11px;opacity:.55;">
-    Rev v11 • Build 2026-02-24 03:21:25
+    Rev v12 • Build 2026-02-24 03:25:53
   </div>
 
 </body>
