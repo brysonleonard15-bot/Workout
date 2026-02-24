@@ -260,6 +260,9 @@
           <div>
             <label for="primaryGroup">Primary workout group</label>
             <select id="primaryGroup"></select>
+            <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:10px;">
+              <button type="button" class="btn" id="randomWorkoutBtn">🎲 Random workout</button>
+            </div>
           </div>
           <div>
             <label for="notes">Notes (optional)</label>
@@ -738,7 +741,7 @@
     const primaryGroup = $("primaryGroup").value;
     const primaryList = primaryGroups[primaryGroup] ?? [];
 
-    // Simple deterministic pick helper (no randomness, stable results)
+    // Simple deterministic pick helper (stable results)
     const pickN = (arr, n, start=0) => {
       const out = [];
       if (!arr.length) return out;
@@ -756,32 +759,43 @@
       "Shoulders": ["Rear Delts", "Triceps", "Abs", "Upper Back / Traps", "Biceps"],
       "Arms": ["Biceps", "Triceps", "Forearms", "Abs", "Rear Delts"]
     };
-
     const auxGroupsOrder = auxPlanByPrimary[primaryGroup] || Object.keys(auxGroups);
 
-    // Primary rows: pick the first N exercises for the selected group
+    // Primary rows
     const primChoices = pickN(primaryList, plan.pCount, 0);
     for (let i=0; i<plan.pCount; i++){
       addPrimaryRow({
         setsValue: plan.pSets,
         repsValue: plan.pReps,
-        restValue: plan.pRest,
-        exerciseValue: primChoices[i] || ""
+        restValue: plan.pRest
       });
+      // Force-fill exercise input (defensive)
+      const row = $("primaryContainer").lastElementChild;
+      const inp = row ? row.querySelector(".exerciseInput") : null;
+      if (inp) inp.value = primChoices[i] || "";
     }
 
-    // Aux rows: cycle through recommended aux groups and pick first exercise from each group
+    // Aux rows
     for (let i=0; i<plan.aCount; i++){
       const g = auxGroupsOrder[i % auxGroupsOrder.length];
       const exList = auxGroups[g] ?? [];
       const ex = exList.length ? exList[i % exList.length] : "";
+
       addAuxRow({
         groupValue: g,
-        exerciseValue: ex,
         setsValue: plan.aSets,
         repsValue: plan.aReps,
         restValue: plan.aRest
       });
+      const row = $("auxContainer").lastElementChild;
+      if (row){
+        const gSel = row.querySelector(".auxGroupSel");
+        const inp = row.querySelector(".exerciseInput");
+        const dl = row.querySelector("datalist");
+        if (gSel) gSel.value = g;
+        if (dl) fillDataList(dl, auxGroups[g] ?? []);
+        if (inp) inp.value = ex || "";
+      }
     }
 
     toast(`Auto-filled: ${mode}`);
@@ -1049,6 +1063,73 @@
       toast("Copy blocked (browser permission)");
     }
   });
+  // Random workout (based on selected primary group)
+  function sampleUnique(arr, n){
+    const a = (arr || []).slice();
+    // Fisher-Yates shuffle
+    for (let i=a.length-1; i>0; i--){
+      const j = Math.floor(Math.random() * (i+1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a.slice(0, Math.min(n, a.length));
+  }
+
+  function buildRandomWorkout(){
+    // Use Moderate as a sensible default structure
+    const plan = templates["moderate"];
+
+    $("intensity").value = "manual";
+    $("primaryContainer").innerHTML = "";
+    $("auxContainer").innerHTML = "";
+
+    const primaryGroup = $("primaryGroup").value;
+    const primList = primaryGroups[primaryGroup] ?? [];
+    const primPick = sampleUnique(primList, plan.pCount);
+
+    // Recommended aux groups (same as templates)
+    const auxPlanByPrimary = {
+      "Chest": ["Triceps", "Shoulders", "Abs", "Rear Delts", "Forearms"],
+      "Back": ["Biceps", "Rear Delts", "Abs", "Upper Back / Traps", "Forearms"],
+      "Legs": ["Quads", "Hamstrings", "Calves", "Abs", "Forearms"],
+      "Shoulders": ["Rear Delts", "Triceps", "Abs", "Upper Back / Traps", "Biceps"],
+      "Arms": ["Biceps", "Triceps", "Forearms", "Abs", "Rear Delts"]
+    };
+    const auxOrder = auxPlanByPrimary[primaryGroup] || Object.keys(auxGroups);
+
+    // Primary rows
+    for (let i=0; i<plan.pCount; i++){
+      addPrimaryRow({ setsValue: plan.pSets, repsValue: plan.pReps, restValue: plan.pRest });
+      const row = $("primaryContainer").lastElementChild;
+      const inp = row ? row.querySelector(".exerciseInput") : null;
+      if (inp) inp.value = primPick[i] || "";
+    }
+
+    // Aux rows (pick 1 random exercise per group, cycling groups)
+    for (let i=0; i<plan.aCount; i++){
+      const g = auxOrder[i % auxOrder.length];
+      const exList = auxGroups[g] ?? [];
+      const ex = sampleUnique(exList, 1)[0] || "";
+
+      addAuxRow({ groupValue: g, setsValue: plan.aSets, repsValue: plan.aReps, restValue: plan.aRest });
+      const row = $("auxContainer").lastElementChild;
+      if (row){
+        const gSel = row.querySelector(".auxGroupSel");
+        const inp = row.querySelector(".exerciseInput");
+        const dl = row.querySelector("datalist");
+        if (gSel) gSel.value = g;
+        if (dl) fillDataList(dl, auxGroups[g] ?? []);
+        if (inp) inp.value = ex;
+      }
+    }
+
+    updateCounts();
+    toast("Random workout created");
+  }
+
+  $("randomWorkoutBtn").addEventListener("click", () => {
+    buildRandomWorkout();
+  });
+
 
   // ----------------------------
   // Init
