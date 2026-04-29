@@ -1,240 +1,405 @@
 <!doctype html>
+
 <html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Workout Builder + Log (Static)</title>
+  <title>Good Pump — Workout Tracker</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;700;800;900&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
+    /* ── Shared constants ── */
     :root{
-      --bg0:#0b1020;
-      --bg1:#0f1730;
-      --card: rgba(255,255,255,.06);
-      --text:#e9eefc;
-      --muted:#a9b3d1;
-      --line: rgba(255,255,255,.12);
-      --accent:#31f3b0;   /* mint */
-      --accent2:#7aa7ff;  /* soft blue */
-      --danger:#ff5b6e;
-      --shadow: 0 20px 60px rgba(0,0,0,.45);
-      --radius: 18px;
-    }
-    *{box-sizing:border-box}
-    body{
-      margin:0;
-      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
-      background:
-        radial-gradient(1000px 500px at 15% 0%, rgba(49,243,176,.12), transparent 50%),
-        radial-gradient(900px 500px at 90% 10%, rgba(122,167,255,.12), transparent 55%),
-        radial-gradient(800px 500px at 50% 100%, rgba(255,91,110,.10), transparent 55%),
-        linear-gradient(180deg, var(--bg0), var(--bg1));
-      color:var(--text);
-      min-height:100vh;
-    }
-    header{
-      padding:28px 18px 18px;
-      max-width:1100px;
-      margin:0 auto;
-    }
-    .brand{display:flex;align-items:center;gap:14px;}
-    .logo{
-      width:44px;height:44px;border-radius:14px;
-      background:
-        radial-gradient(18px 18px at 30% 30%, rgba(49,243,176,.95), rgba(49,243,176,.1)),
-        radial-gradient(20px 20px at 70% 70%, rgba(122,167,255,.95), rgba(122,167,255,.1)),
-        linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.02));
-      border:1px solid rgba(255,255,255,.10);
-      box-shadow: 0 18px 35px rgba(0,0,0,.35);
-      position:relative;
-      overflow:hidden;
-    }
-    .logo:after{
-      content:"";
-      position:absolute; inset:-40%;
-      background:conic-gradient(from 180deg, rgba(49,243,176,.0), rgba(49,243,176,.5), rgba(122,167,255,.5), rgba(49,243,176,.0));
-      animation: spin 8s linear infinite;
-      filter: blur(12px);
-      opacity:.55;
-    }
-    @keyframes spin{to{transform:rotate(360deg)}}
-    h1{font-size:20px;margin:0;letter-spacing:.2px;}
-    .sub{margin:3px 0 0;color:var(--muted);font-size:13px;line-height:1.35;}
-
-    main{
-      max-width:1100px;
-      margin:0 auto;
-      padding:0 18px 38px;
-      display:grid;
-      grid-template-columns: 1.2fr .8fr;
-      gap:16px;
-    }
-    @media (max-width: 980px){ main{grid-template-columns:1fr} }
-
-    .card{
-      background: linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.04));
-      border:1px solid rgba(255,255,255,.10);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-      overflow:hidden;
-    }
-    .card .hd{
-      padding:14px 16px;
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:12px;
-      border-bottom: 1px solid var(--line);
-      background: rgba(0,0,0,.14);
-    }
-    .card .hd .title{display:flex;flex-direction:column;gap:2px;}
-    .card .hd .title b{font-size:14px;letter-spacing:.2px;}
-    .card .hd .title span{color:var(--muted);font-size:12px;}
-    .card .bd{padding:16px}
-
-    .grid2{
-      display:grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap:12px;
-    }
-    @media (max-width: 540px){ .grid2{grid-template-columns:1fr} }
-
-    label{display:block;font-size:12px;color:var(--muted);margin:0 0 6px;}
-    input, select, button, textarea{font: inherit;}
-    input[type="date"], input[type="text"], select, textarea{
-      width:100%;
-      background: rgba(0,0,0,.24);
-      color:var(--text);
-      border:1px solid rgba(255,255,255,.12);
-      padding:10px 11px;
-      border-radius: 14px;
-      outline:none;
-      transition: transform .05s ease, border-color .15s ease, background .15s ease;
-    }
-    textarea{min-height:84px; resize:vertical}
-    input[type="date"]:focus, input[type="text"]:focus, select:focus, textarea:focus{
-      border-color: rgba(49,243,176,.55);
-      box-shadow: 0 0 0 4px rgba(49,243,176,.12);
+      --orange:#ff5a1f;
+      --orange2:#ff7a45;
+      --gold:#f5c842;
+      --green:#3ecf6e;
+      --red:#ff4455;
+      --blue:#4a9eff;
+      --radius:14px;
+      --nav-h:60px;
+      --font-display:'Barlow Condensed',sans-serif;
+      --font-body:'Barlow',sans-serif;
     }
 
-    .row{
-      gap:10px;
-      align-items:end;
-      padding:10px;
-      border-radius: 16px;
-      background: rgba(255,255,255,.03);
-      border:1px solid rgba(255,255,255,.08);
-      margin:10px 0 0;
-      display:grid;
-    }
-    /* Primary rows: Exercise | Sets | Reps | Rest | Remove */
-    .row.primary{grid-template-columns: 1.8fr .8fr .8fr .9fr auto;}
-    /* Aux rows: Aux Group | Exercise | Sets | Reps | Rest | Remove */
-    .row.aux{grid-template-columns: 1.25fr 1.55fr .8fr .8fr .9fr auto;}
+```
+/* ── Dark theme (default) ── */
+:root, [data-theme="dark"]{
+  --bg:#141414;
+  --bg1:#1a1a1a;
+  --bg2:#222222;
+  --bg3:#2a2a2a;
+  --text:#f0ede8;
+  --muted:#8a8580;
+  --line:rgba(255,255,255,.08);
+  --shadow:0 8px 32px rgba(0,0,0,.6);
+  --input-border:rgba(255,255,255,.1);
+  --row-border:rgba(255,255,255,.06);
+  --btn-border:rgba(255,255,255,.1);
+  --ghost-border:rgba(255,255,255,.12);
+  --savebar-bg:rgba(20,20,20,.95);
+  --select-arrow:%238a8580;
+}
 
-    @media (max-width: 780px){
-      .row.primary{grid-template-columns:1fr 1fr; align-items:stretch}
-      .row.aux{grid-template-columns:1fr 1fr; align-items:stretch}
-      .row .removeBtn{grid-column:1/-1}
-    }
+/* ── Light theme ── */
+[data-theme="light"]{
+  --bg:#f4f4f0;
+  --bg1:#ffffff;
+  --bg2:#f0eeeb;
+  --bg3:#e8e5e1;
+  --text:#1a1814;
+  --muted:#7a746e;
+  --line:rgba(0,0,0,.08);
+  --shadow:0 8px 32px rgba(0,0,0,.12);
+  --input-border:rgba(0,0,0,.12);
+  --row-border:rgba(0,0,0,.06);
+  --btn-border:rgba(0,0,0,.1);
+  --ghost-border:rgba(0,0,0,.15);
+  --savebar-bg:rgba(244,244,240,.95);
+  --select-arrow:%237a746e;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+body{
+  margin:0;font-family:var(--font-body);
+  background:var(--bg);
+  color:var(--text);min-height:100vh;
+  padding-bottom:calc(var(--nav-h) + env(safe-area-inset-bottom) + 8px);
+  /* subtle noise grain */
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+}
 
-    .btn{
-      cursor:pointer;
-      border:1px solid rgba(255,255,255,.14);
-      background: rgba(255,255,255,.06);
-      color:var(--text);
-      padding:10px 12px;
-      border-radius: 14px;
-      transition: transform .05s ease, background .15s ease, border-color .15s ease;
-      user-select:none;
-      white-space:nowrap;
-    }
-    .btn:hover{background: rgba(255,255,255,.09); border-color: rgba(255,255,255,.18)}
-    .btn:active{transform: translateY(1px)}
-    .btnPrimary{
-      border-color: rgba(49,243,176,.35);
-      background: rgba(49,243,176,.12);
-    }
-    .btnPrimary:hover{background: rgba(49,243,176,.16)}
-    .btnDanger{
-      border-color: rgba(255,91,110,.35);
-      background: rgba(255,91,110,.12);
-    }
-    .btnDanger:hover{background: rgba(255,91,110,.16)}
-    .pill{
-      display:inline-flex;
-      align-items:center;
-      gap:8px;
-      padding:6px 10px;
-      border-radius: 999px;
-      border:1px solid rgba(255,255,255,.14);
-      background: rgba(0,0,0,.18);
-      color:var(--muted);
-      font-size:12px;
-    }
-    .dot{width:9px;height:9px;border-radius:99px;background:var(--accent)}
-    .dot2{background:var(--accent2)}
-    .divider{height:1px; background: var(--line); margin:14px 0;}
-    .hint{font-size:12px;color: var(--muted);line-height:1.4;margin:10px 0 0;}
-    .kpi{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px;}
+/* ── Header ── */
+header{
+  padding:16px 16px 12px;max-width:1100px;margin:0 auto;
+  border-bottom:1px solid var(--line);
+}
+.brand{display:flex;align-items:center;gap:12px;}
+.logo{
+  width:38px;height:38px;border-radius:10px;flex-shrink:0;
+  background:linear-gradient(135deg,var(--orange),#c0390a);
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--font-display);font-size:18px;font-weight:900;
+  color:#fff;letter-spacing:-1px;box-shadow:0 4px 16px rgba(255,90,31,.4);
+  position:relative;overflow:hidden;
+}
+.logo::after{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(135deg,rgba(255,255,255,.2),transparent);
+}
+h1{
+  font-family:var(--font-display);font-size:22px;font-weight:900;
+  margin:0;letter-spacing:.5px;text-transform:uppercase;
+  line-height:1;
+}
+h1 span{color:var(--orange);}
+.sub{display:none;}
+@media(min-width:700px){.sub{display:block;margin:2px 0 0;color:var(--muted);font-size:12px;}}
 
-    /* Log list */
-    .logList{display:flex; flex-direction:column; gap:10px}
-    .logItem{
-      padding:12px;
-      border-radius:16px;
-      background: rgba(255,255,255,.04);
-      border:1px solid rgba(255,255,255,.10);
-    }
-    .logItem .top{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;}
-    .logItem h3{margin:0;font-size:14px;letter-spacing:.2px;}
-    .logItem .meta{margin-top:4px;color:var(--muted);font-size:12px;}
-    .logItem ul{margin:10px 0 0;padding-left:18px;color:var(--text);font-size:12.5px;line-height:1.35;}
-    .empty{
-      padding:14px;
-      border:1px dashed rgba(255,255,255,.20);
-      background: rgba(0,0,0,.18);
-      border-radius:16px;
-      color: var(--muted);
-      font-size:12.5px;
-      line-height:1.35;
-    }
-    .toast{
-      position: fixed;
-      left: 50%;
-      bottom: 18px;
-      transform: translateX(-50%);
-      background: rgba(0,0,0,.55);
-      border:1px solid rgba(255,255,255,.16);
-      color: var(--text);
-      padding:10px 12px;
-      border-radius: 999px;
-      box-shadow: var(--shadow);
-      opacity:0;
-      pointer-events:none;
-      transition: opacity .2s ease, transform .2s ease;
-      font-size:12.5px;
-    }
-    .toast.show{opacity:1; transform: translateX(-50%) translateY(-2px)}
+/* ── Layout ── */
+main{max-width:1100px;margin:0 auto;padding:12px 12px;display:flex;flex-direction:column;gap:10px;}
+@media(min-width:900px){main{display:grid;grid-template-columns:1.2fr .8fr;gap:16px;padding:16px 18px 32px;}}
+
+/* ── Mobile section visibility ── */
+.pageSection{display:none;}
+.pageSection.active{display:block;}
+@media(min-width:900px){.pageSection{display:block!important;}}
+
+/* ── Bottom nav ── */
+.bottomNav{
+  display:flex;position:fixed;bottom:0;left:0;right:0;z-index:200;
+  background:var(--bg1);
+  border-top:1px solid var(--line);
+  padding-bottom:env(safe-area-inset-bottom);
+}
+@media(min-width:900px){.bottomNav{display:none;}}
+.navItem{
+  flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:2px;padding:8px 4px 6px;cursor:pointer;border:none;background:none;
+  color:var(--muted);font-family:var(--font-display);font-size:10px;
+  font-weight:700;letter-spacing:.8px;text-transform:uppercase;
+  min-height:var(--nav-h);transition:color .15s;
+}
+.navItem.active{color:var(--orange);}
+.navItem .navIcon{font-size:20px;line-height:1;margin-bottom:1px;transition:transform .15s;}
+.navItem.active .navIcon{transform:translateY(-2px);}
+.navItem .navLabel{font-size:9px;font-weight:700;letter-spacing:.8px;}
+
+/* ── Cards ── */
+.card{
+  background:var(--bg1);
+  border:1px solid var(--line);
+  border-radius:var(--radius);overflow:hidden;
+}
+.card .hd{
+  padding:12px 14px;display:flex;align-items:center;
+  justify-content:space-between;gap:10px;
+  border-bottom:1px solid var(--line);
+  background:var(--bg2);
+}
+.card .hd .title{display:flex;flex-direction:column;gap:1px;}
+.card .hd .title b{
+  font-family:var(--font-display);font-size:15px;font-weight:800;
+  letter-spacing:.4px;text-transform:uppercase;
+}
+.card .hd .title span{color:var(--muted);font-size:11px;}
+.card .bd{padding:14px;}
+
+/* ── Grid ── */
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;}
+
+/* ── Section headings ── */
+.sectionH{
+  font-family:var(--font-display);font-size:13px;font-weight:800;
+  letter-spacing:.8px;text-transform:uppercase;
+  color:var(--muted);margin:14px 0 6px;
+}
+.sectionH span{
+  display:inline-block;padding:2px 8px;
+  background:var(--bg3);border-radius:4px;
+}
+
+/* ── Form controls ── */
+label{display:block;font-size:11px;font-weight:600;color:var(--muted);margin:0 0 5px;letter-spacing:.4px;text-transform:uppercase;}
+input,select,button,textarea{font-family:var(--font-body);font-size:16px;}
+input[type="date"],input[type="text"],select,textarea{
+  width:100%;background:var(--bg2);color:var(--text);
+  border:1px solid var(--input-border);
+  padding:12px 13px;border-radius:10px;outline:none;
+  -webkit-appearance:none;appearance:none;
+  transition:border-color .15s,box-shadow .15s;
+}
+input[type="date"]:focus,input[type="text"]:focus,select:focus,textarea:focus{
+  border-color:var(--orange);box-shadow:0 0 0 3px rgba(255,90,31,.15);}
+textarea{min-height:76px;resize:vertical;font-size:15px;}
+select{background-repeat:no-repeat;background-position:right 13px center;padding-right:36px;}
+[data-theme='dark'] select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238a8580' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");}
+[data-theme='light'] select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%237a746e' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");}
+
+/* ── Exercise rows ── */
+.row{
+  padding:12px;border-radius:12px;
+  background:var(--bg2);border:1px solid var(--row-border);
+  margin:8px 0 0;position:relative;
+}
+.row::before{
+  content:'';position:absolute;left:0;top:0;bottom:0;width:3px;
+  background:var(--orange);border-radius:3px 0 0 3px;opacity:.6;
+}
+.row.auxRow::before{background:var(--blue);opacity:.5;}
+.row .exName{margin-bottom:8px;}
+.row .exGroup{margin-bottom:8px;}
+.row .exControls{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:8px;}
+.row .exActions{display:flex;gap:7px;}
+.row .exActions .removeBtn{flex:1;}
+
+/* ── Buttons ── */
+.btn{
+  cursor:pointer;
+  border:1px solid var(--btn-border);
+  background:var(--bg3);
+  color:var(--text);
+  padding:13px 16px;border-radius:10px;
+  font-family:var(--font-body);font-size:14px;font-weight:600;
+  min-height:48px;display:inline-flex;align-items:center;justify-content:center;gap:6px;
+  user-select:none;white-space:nowrap;
+  transition:transform .08s,background .12s,border-color .12s;
+}
+.btn:active{transform:scale(.95);}
+.btnSm{padding:9px 12px;font-size:13px;min-height:40px;}
+.btnPrimary{
+  background:var(--orange);border-color:transparent;color:#fff;
+  font-family:var(--font-display);font-size:15px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;
+  box-shadow:0 4px 16px rgba(255,90,31,.3);
+}
+.btnPrimary:active{background:#e04d18;}
+.btnDanger{background:rgba(255,68,85,.12);border-color:rgba(255,68,85,.3);color:var(--red);}
+.btnDanger:active{background:rgba(255,68,85,.22);}
+.btnShare{background:rgba(74,158,255,.12);border-color:rgba(74,158,255,.3);color:var(--blue);}
+.btnShare:active{background:rgba(74,158,255,.22);}
+.btnGhost{background:transparent;border-color:var(--ghost-border);color:var(--muted);}
+.btnFull{width:100%;}
+
+/* ── Sticky save bar ── */
+.saveBar{
+  position:sticky;
+  bottom:calc(var(--nav-h) + env(safe-area-inset-bottom));
+  z-index:50;margin:14px -14px -14px;
+  background:var(--savebar-bg);
+  border-top:1px solid var(--line);
+  padding:10px 14px;display:flex;gap:8px;
+  backdrop-filter:blur(20px);
+}
+.saveBar .btn{flex:1;}
+@media(min-width:900px){
+  .saveBar{position:static;margin:14px 0 0;background:none;border:none;padding:0;backdrop-filter:none;}
+}
+
+/* ── Misc ── */
+.pill{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:4px 10px;border-radius:999px;
+  border:1px solid var(--btn-border);
+  background:var(--bg3);color:var(--muted);font-size:11px;font-weight:500;
+}
+.dot{width:7px;height:7px;border-radius:99px;background:var(--orange);}
+.dot2{background:var(--blue);}
+.divider{height:1px;background:var(--line);margin:14px 0;}
+.hint{font-size:12px;color:var(--muted);line-height:1.4;margin:7px 0 0;}
+.kpi{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;}
+
+/* ── Log list ── */
+.logList{display:flex;flex-direction:column;gap:8px;}
+.logItem{
+  padding:12px;border-radius:12px;
+  background:var(--bg2);border:1px solid var(--row-border);
+  position:relative;overflow:hidden;
+}
+.logItem::before{
+  content:'';position:absolute;left:0;top:0;bottom:0;width:3px;
+  background:var(--orange);
+}
+.logItem .top{display:flex;justify-content:space-between;gap:8px;align-items:flex-start;}
+.logItem h3{
+  margin:0;
+  font-family:var(--font-display);font-size:16px;font-weight:800;
+  letter-spacing:.3px;text-transform:uppercase;
+}
+.logItem .meta{margin-top:3px;color:var(--muted);font-size:12px;}
+.logItem ul{margin:8px 0 0;padding-left:0;list-style:none;color:var(--text);font-size:12px;line-height:1.6;}
+.logItem ul li::before{content:'→ ';color:var(--orange);font-weight:600;}
+.logItem .actions{display:flex;gap:6px;flex-shrink:0;}
+.empty{
+  padding:28px 14px;
+  border:1px dashed rgba(255,255,255,.1);
+  background:var(--bg2);
+  border-radius:12px;color:var(--muted);font-size:13px;line-height:1.6;text-align:center;
+}
+.empty strong{display:block;font-family:var(--font-display);font-size:18px;font-weight:800;color:var(--text);margin-bottom:4px;text-transform:uppercase;}
+
+/* ── Toast ── */
+.toast{
+  position:fixed;left:50%;
+  bottom:calc(var(--nav-h) + env(safe-area-inset-bottom) + 10px);
+  transform:translateX(-50%);
+  background:var(--bg3);border:1px solid rgba(255,255,255,.12);
+  color:var(--text);padding:10px 18px;border-radius:999px;
+  box-shadow:var(--shadow);opacity:0;pointer-events:none;
+  transition:opacity .2s,transform .2s;
+  font-size:13px;font-weight:600;white-space:nowrap;z-index:300;
+}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(-4px);}
+@media(min-width:900px){.toast{bottom:18px;}}
+
+/* ── Theme toggle ── */
+.themeToggle{
+  cursor:pointer;background:var(--bg2);border:1px solid var(--line);
+  color:var(--muted);border-radius:999px;padding:6px 12px;
+  font-family:var(--font-body);font-size:13px;font-weight:600;
+  display:flex;align-items:center;gap:5px;min-height:34px;
+  transition:background .2s,color .2s;flex-shrink:0;
+}
+.themeToggle:active{transform:scale(.95);}
+
+/* ── Light theme overrides for specific hard-coded dark values ── */
+[data-theme="light"] .card .hd{background:var(--bg2);}
+[data-theme="light"] .logItem::before{opacity:1;}
+[data-theme="light"] .row::before{opacity:.8;}
+[data-theme="light"] .empty{border-color:rgba(0,0,0,.12);}
+[data-theme="light"] .volBarTrack{background:rgba(0,0,0,.07);}
+[data-theme="light"] .volKpi{background:var(--bg2);border-color:rgba(0,0,0,.07);}
+
+/* ── Tab bar ── */
+.tabBar{
+  display:flex;gap:0;
+  background:var(--bg2);
+  border-bottom:1px solid var(--line);
+}
+.tabBtn{
+  cursor:pointer;background:none;border:none;border-bottom:2px solid transparent;
+  color:var(--muted);font-family:var(--font-display);font-size:13px;font-weight:700;
+  letter-spacing:.5px;text-transform:uppercase;
+  padding:11px 16px 9px;
+  transition:color .15s,border-color .15s;min-height:42px;
+}
+.tabBtn.active{color:var(--orange);border-bottom-color:var(--orange);}
+.tabPane{display:none;}.tabPane.active{display:block;}
+
+/* ── Volume ── */
+.volWeekNav{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px;}
+.volWeekLabel{font-family:var(--font-display);font-size:16px;font-weight:800;color:var(--text);text-transform:uppercase;letter-spacing:.3px;}
+.volWeekSub{font-size:11px;color:var(--muted);margin-top:1px;}
+.volGroup{margin-bottom:12px;}
+.volGroupHeader{display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;}
+.volGroupName{font-size:13px;font-weight:600;color:var(--text);}
+.volGroupSets{font-size:12px;color:var(--muted);font-weight:500;}
+.volBarTrack{height:8px;background:rgba(255,255,255,.06);border-radius:99px;overflow:hidden;}
+.volBarFill{height:100%;border-radius:99px;transition:width .5s cubic-bezier(.4,0,.2,1);}
+.volBarFill.high{background:linear-gradient(90deg,var(--green),#2ba853);}
+.volBarFill.mid{background:linear-gradient(90deg,var(--orange),var(--orange2));}
+.volBarFill.low{background:linear-gradient(90deg,rgba(255,255,255,.2),rgba(255,255,255,.1));}
+.volBarFill.abs{background:linear-gradient(90deg,var(--gold),#d4a820);}
+.volTargetHint{font-size:11px;color:var(--muted);margin-top:3px;}
+.volLegend{display:flex;gap:12px;flex-wrap:wrap;margin-top:14px;padding-top:12px;border-top:1px solid var(--line);}
+.volLegendItem{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--muted);font-weight:500;}
+.volLegendDot{width:8px;height:8px;border-radius:99px;}
+.volEmpty{padding:24px 14px;border:1px dashed rgba(255,255,255,.1);background:var(--bg2);border-radius:12px;color:var(--muted);font-size:13px;text-align:center;line-height:1.5;}
+.volSummaryRow{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;}
+.volKpi{
+  flex:1;min-width:68px;
+  background:var(--bg2);border:1px solid rgba(255,255,255,.07);
+  border-radius:10px;padding:10px 8px;text-align:center;
+}
+.volKpiVal{font-family:var(--font-display);font-size:26px;font-weight:900;color:var(--orange);line-height:1;}
+.volKpiLabel{font-size:10px;color:var(--muted);margin-top:3px;font-weight:600;letter-spacing:.4px;text-transform:uppercase;}
+```
+
   </style>
+  <!-- ═══════════════════════════════════════════
+       ANALYTICS — Replace G-XXXXXXXXXX with your
+       Google Analytics Measurement ID after setting
+       up a GA4 property at analytics.google.com
+  ═══════════════════════════════════════════ -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-XXXXXXXXXX');
+
+```
+// Helper to fire custom events from anywhere in the app
+window.trackEvent = function(eventName, params) {
+  if (typeof gtag !== 'undefined') {
+    gtag('event', eventName, params || {});
+  }
+};
+```
+
+  </script>
 </head>
 <body>
   <header>
     <div class="brand">
-      <div class="logo" aria-hidden="true"></div>
-      <div>
-        <h1>Workout Builder + Log</h1>
-        <div style="margin-top:6px; font-size:11px; opacity:0.6;">Build: 2026-02-24 01:19:08</div>
-        <p class="sub">Static HTML (no server). Improved templates: “intensity” changes effort + rest + rep ranges, not just more sets.</p>
+      <div class="logo" aria-hidden="true">GP</div>
+      <div style="flex:1;">
+        <h1>Good <span>Pump</span></h1>
+        <p class="sub">Track workouts · chase the pump · share with your partner</p>
       </div>
+      <button class="themeToggle" id="themeToggle" type="button" aria-label="Toggle theme">
+        <span id="themeIcon">☀️</span>
+        <span id="themeLabel">Light</span>
+      </button>
     </div>
   </header>
 
   <main>
     <!-- Builder -->
+    <div class="pageSection active" id="sectionBuild">
     <section class="card">
       <div class="hd">
         <div class="title">
-          <b>Build today’s workout</b>
-          <span>Pick a primary lift focus, add auxiliaries, then save.</span>
+          <b>Build Workout</b>
+          <span>Choose your focus, add exercises, save to log</span>
         </div>
         <span class="pill"><span class="dot"></span>Local-only storage</span>
       </div>
@@ -255,315 +420,252 @@
           </div>
         </div>
 
-        <div class="grid2" style="margin-top:12px;">
-          <div>
-            <label for="userName">User</label>
-            <input id="userName" type="text" placeholder="e.g., Bryson" />
-          </div>
-</div>
+```
+    <div class="grid2" style="margin-top:12px;">
+      <div>
+        <label for="userName">User</label>
+        <input id="userName" type="text" placeholder="e.g., Bryson" />
+      </div>
+    </div>
 
-        <div class="divider"></div>
+    <div class="divider"></div>
 
-        <div class="grid2">
-          <div>
-            <label for="primaryGroup">Primary workout group</label>
-            <select id="primaryGroup"></select>
-            <div style="margin-top:12px;">
-              <label for="dayPreset">Day preset</label>
-              <select id="dayPreset">
-                <option value="custom">Custom</option>
-                <option value="chest_tris">Chest + Triceps</option>
-                <option value="back_bis">Back + Biceps</option>
-                <option value="legs_calves">Legs + Calves</option>
-                <option value="shoulders_abs">Shoulders + Abs</option>
-                <option value="arms">Arms</option>
-              </select>
-              <div class="hint">Pick a common split to auto-set primary + suggested auxiliary focus.</div>
-            </div>
-
-            <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:10px;">
-              <button type="button" class="btn" id="randomWorkoutBtn">🎲 Random workout</button>
-              <button type="button" class="btn" id="toggleFavsBtn">⭐ Favorites</button>
-            </div>
-          </div>
-          <div>
-            <label for="notes">Notes (optional)</label>
-            <textarea id="notes" placeholder="Energy level, tempo, PRs, pain notes, etc."></textarea>
-          </div>
+    <div class="grid2">
+      <div>
+        <label for="primaryGroup">Primary workout group</label>
+        <select id="primaryGroup"></select>
+        <div style="margin-top:12px;">
+          <label for="dayPreset">Day preset</label>
+          <select id="dayPreset">
+            <option value="custom">Custom</option>
+            <option value="chest_tris">Chest + Triceps</option>
+            <option value="back_bis">Back + Biceps</option>
+            <option value="legs_calves">Legs + Calves</option>
+            <option value="shoulders_abs">Shoulders + Abs</option>
+            <option value="arms">Arms</option>
+          </select>
+          <div class="hint">Pick a common split to auto-set primary + suggested auxiliary focus.</div>
         </div>
 
-        <div class="kpi">
-          <span class="pill"><span class="dot"></span><span id="primaryCountPill">Primary: 0</span></span>
-          <span class="pill"><span class="dot2"></span><span id="auxCountPill">Aux: 0</span></span>
-        </div>
-
-        <h2 style="margin:14px 0 8px; font-size:14px;">Primary exercises</h2>
-        <div id="primaryContainer"></div>
         <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:10px;">
-          <button type="button" class="btn btnPrimary" id="addPrimaryBtn">+ Add primary exercise</button>
+          <button type="button" class="btn" id="randomWorkoutBtn">🎲 Random workout</button>
+          <button type="button" class="btn" id="toggleFavsBtn">⭐ Favorites</button>
         </div>
+      </div>
+      <div>
+        <label for="notes">Notes (optional)</label>
+        <textarea id="notes" placeholder="Energy level, tempo, PRs, pain notes, etc."></textarea>
+      </div>
+    </div>
 
-        <div class="divider"></div>
+    <div class="kpi">
+      <span class="pill"><span class="dot"></span><span id="primaryCountPill">Primary: 0</span></span>
+      <span class="pill"><span class="dot2"></span><span id="auxCountPill">Aux: 0</span></span>
+    </div>
 
-        <h2 style="margin:0 0 8px; font-size:14px;">Auxiliary exercises</h2>
-        <div class="hint">Aux = smaller muscle groups and finishers (biceps, triceps, calves, abs, forearms, rear delts, etc.).</div>
-        <div id="auxContainer"></div>
+    <div class="sectionH"><span>Primary Lifts</span></div>
+    <div id="primaryContainer"></div>
+    <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:10px;">
+      <button type="button" class="btn btnGhost btnFull" id="addPrimaryBtn">+ Add Primary Exercise</button>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="sectionH"><span>Auxiliary Work</span></div>
+    
+    <div id="auxContainer"></div>
+    <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:10px;">
+      <button type="button" class="btn btnGhost btnFull" id="addAuxBtn">+ Add Auxiliary Exercise</button>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="saveBar">
+      <button type="button" class="btn btnPrimary" id="saveBtn">Save</button>
+      <button type="button" class="btn btnShare" id="sharePdfBtn">Share PDF</button>
+      <button type="button" class="btn btnGhost" id="resetBtn">Reset</button>
+    </div>
+  </div>
+</section>
+</div><!-- /sectionBuild -->
+
+<!-- Log + Volume tabbed panel -->
+<div class="pageSection" id="sectionLog">
+<aside class="card">
+  <div class="hd">
+    <div class="title">
+      <b>Workout Log</b>
+      <span>All your logged sessions</span>
+    </div>
+    <span class="pill"><span class="dot2"></span>Offline</span>
+  </div>
+
+  <!-- Tab bar -->
+  <div class="tabBar">
+    <button class="tabBtn active" id="tabBtnLog" type="button">📋 Log</button>
+    <button class="tabBtn" id="tabBtnVolume" type="button">📊 Weekly Volume</button>
+  </div>
+
+  <div class="bd">
+
+    <!-- ── TAB: LOG ── -->
+    <div class="tabPane active" id="tabPaneLog">
+      <div class="grid2" style="margin-bottom:12px;">
+        <div>
+          <label for="logUserFilter">Filter by user</label>
+          <select id="logUserFilter">
+            <option value="__all__">All users</option>
+          </select>
+        </div>
+        <div>
+          <label>&nbsp;</label>
+          <button type="button" class="btn" id="clearUserFilterBtn">Show all</button>
+        </div>
+      </div>
+
+      <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:12px;">
+        <button type="button" class="btn" id="exportBtn">Export JSON</button>
+        <button type="button" class="btn btnDanger" id="clearBtn">Clear all</button>
+      </div>
+      <div id="exportBox" style="display:none;">
+        <label for="exportText">Exported log JSON (copy/paste to backup)</label>
+        <textarea id="exportText" spellcheck="false"></textarea>
         <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:10px;">
-          <button type="button" class="btn" id="addAuxBtn">+ Add auxiliary exercise</button>
+          <button type="button" class="btn" id="hideExportBtn">Hide</button>
+          <button type="button" class="btn btnPrimary" id="copyExportBtn">Copy</button>
         </div>
-
         <div class="divider"></div>
-
-        <div style="display:flex; gap:10px; flex-wrap:wrap;">
-          <button type="button" class="btn btnPrimary" id="saveBtn">Save to log</button>
-          <button type="button" class="btn" id="resetBtn">Reset form</button>
-        </div>
-        <div class="hint">Your log is saved in <b>localStorage</b> on this device/browser. Use Export JSON in the Log panel to backup.</div>
       </div>
-    </section>
 
-    <!-- Log -->
-    <aside class="card">
-      <div class="hd">
-        <div class="title">
-          <b>Your saved log</b>
-          <span>Review, load, delete, or export your workouts.</span>
+      <div id="logList" class="logList"></div>
+    </div>
+
+    <!-- ── TAB: WEEKLY VOLUME ── -->
+    <div class="tabPane" id="tabPaneVolume">
+
+      <!-- User filter (mirrors log filter) -->
+      <div class="grid2" style="margin-bottom:14px;">
+        <div>
+          <label for="volUserFilter">Filter by user</label>
+          <select id="volUserFilter">
+            <option value="__all__">All users</option>
+          </select>
         </div>
-        <span class="pill"><span class="dot2"></span>Offline</span>
+        <div>
+          <label>&nbsp;</label>
+          <button type="button" class="btn" id="volShowAllBtn">Show all</button>
+        </div>
       </div>
-      <div class="bd">
-        
-        <div class="grid2" style="margin-bottom:12px;">
-          <div>
-            <label for="logUserFilter">Filter by user</label>
-            <select id="logUserFilter">
-              <option value="__all__">All users</option>
-            </select>
-          </div>
-          <div>
-            <label>&nbsp;</label>
-            <button type="button" class="btn" id="clearUserFilterBtn">Show all</button>
-          </div>
-        </div>
 
-        <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:12px;">
-          <button type="button" class="btn" id="exportBtn">Export JSON</button>
-          <button type="button" class="btn btnDanger" id="clearBtn">Clear all</button>
+      <!-- Week navigation -->
+      <div class="volWeekNav">
+        <button type="button" class="btn" id="volPrevWeek">← Prev</button>
+        <div style="text-align:center;">
+          <div class="volWeekLabel" id="volWeekLabel">This week</div>
+          <div class="volWeekSub" id="volWeekSub"></div>
         </div>
-        <div id="exportBox" style="display:none;">
-          <label for="exportText">Exported log JSON (copy/paste to backup)</label>
-          <textarea id="exportText" spellcheck="false"></textarea>
-          <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:10px;">
-            <button type="button" class="btn" id="hideExportBtn">Hide</button>
-            <button type="button" class="btn btnPrimary" id="copyExportBtn">Copy</button>
-          </div>
-          <div class="divider"></div>
-        </div>
-
-        <div id="logList" class="logList"></div>
+        <button type="button" class="btn" id="volNextWeek">Next →</button>
       </div>
-    </aside>
+
+      <!-- KPI summary row -->
+      <div class="volSummaryRow" id="volSummaryRow"></div>
+
+      <!-- Volume bars -->
+      <div id="volBars"></div>
+
+      <!-- Legend -->
+      <div class="volLegend">
+        <div class="volLegendItem"><div class="volLegendDot" style="background:#31f3b0"></div>≥10 sets (well trained)</div>
+        <div class="volLegendItem"><div class="volLegendDot" style="background:#7aa7ff"></div>5–9 sets (moderate)</div>
+        <div class="volLegendItem"><div class="volLegendDot" style="background:rgba(255,255,255,.25)"></div>1–4 sets (light)</div>
+        <div class="volLegendItem"><div class="volLegendDot" style="background:#ff5b6e"></div>Abs</div>
+      </div>
+    </div>
+
+  </div><!-- /.bd -->
+</aside>
+</div><!-- /sectionLog -->
+```
+
   </main>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script>
 (function(){
-  const BUILD_VERSION = "2026-02-24 01:19:08";
-  console.log("Workout Log Build:", BUILD_VERSION);
-  // ----------------------------
+  const BUILD_VERSION = "2026-03-05 v19";
+  console.log("Good Pump Build:", BUILD_VERSION);
+
+  // ─────────────────────────────────────────
   // Data: groups + exercises
-  // ----------------------------
+  // ─────────────────────────────────────────
   const primaryGroups = {
     "Chest": [
-      "Barbell Bench Press",
-      "Incline Barbell Bench Press",
-      "Dumbbell Bench Press",
-      "Incline Dumbbell Press",
-      "Flat Dumbbell Press (Neutral Grip)",
-      "Weighted Dips",
-      "Machine Chest Press",
-      "Smith Machine Bench Press",
-      "Cable Fly (High-to-Low)",
-      "Cable Fly (Low-to-High)",
-      "Pec Deck / Machine Fly",
-      "Dumbbell Fly (Flat/Incline)",
+      "Barbell Bench Press","Incline Barbell Bench Press","Dumbbell Bench Press",
+      "Incline Dumbbell Press","Flat Dumbbell Press (Neutral Grip)","Weighted Dips",
+      "Machine Chest Press","Smith Machine Bench Press","Cable Fly (High-to-Low)",
+      "Cable Fly (Low-to-High)","Pec Deck / Machine Fly","Dumbbell Fly (Flat/Incline)",
       "Push-Up (Weighted/Slow Tempo)"
     ],
     "Back": [
-      "Weighted Pull-Up / Chin-Up",
-      "Lat Pulldown (Wide/Neutral)",
-      "Chest-Supported Row",
-      "Seated Cable Row",
-      "One-Arm Dumbbell Row",
-      "Barbell Row",
-      "T-Bar Row",
-      "Machine Row (Plate-Loaded)",
-      "Straight-Arm Pulldown",
-      "Back Extension (Controlled)",
-      "Deadlift (Technique/Strength)",
-      "Rack Pull"
+      "Weighted Pull-Up / Chin-Up","Lat Pulldown (Wide/Neutral)","Chest-Supported Row",
+      "Seated Cable Row","One-Arm Dumbbell Row","Barbell Row","T-Bar Row",
+      "Machine Row (Plate-Loaded)","Straight-Arm Pulldown","Back Extension (Controlled)",
+      "Deadlift (Technique/Strength)","Rack Pull"
     ],
     "Legs": [
-      "Back Squat",
-      "Front Squat",
-      "Leg Press",
-      "Hack Squat",
-      "Bulgarian Split Squat",
-      "Walking Lunge",
-      "Romanian Deadlift",
-      "Good Morning (Light)",
-      "Lying Leg Curl",
-      "Seated Leg Curl",
-      "Leg Extension",
-      "Hip Thrust",
-      "Glute Bridge",
-      "Step-Up"
+      "Back Squat","Front Squat","Leg Press","Hack Squat","Bulgarian Split Squat",
+      "Walking Lunge","Romanian Deadlift","Good Morning (Light)","Lying Leg Curl",
+      "Seated Leg Curl","Leg Extension","Hip Thrust","Glute Bridge","Step-Up"
     ],
     "Shoulders": [
-      "Overhead Press (Barbell)",
-      "Seated Dumbbell Press",
-      "Standing Dumbbell Press",
-      "Machine Shoulder Press",
-      "Arnold Press",
-      "Lateral Raise (Dumbbell)",
-      "Cable Lateral Raise",
-      "Machine Lateral Raise",
-      "Rear Delt Fly (Machine)",
-      "Rear Delt Cable Fly",
-      "Face Pull",
-      "Upright Row (Cable/BB - light)"
+      "Overhead Press (Barbell)","Seated Dumbbell Press","Standing Dumbbell Press",
+      "Machine Shoulder Press","Arnold Press","Lateral Raise (Dumbbell)",
+      "Cable Lateral Raise","Machine Lateral Raise","Rear Delt Fly (Machine)",
+      "Rear Delt Cable Fly","Face Pull","Upright Row (Cable/BB - light)"
     ],
     "Arms": [
-      "Close-Grip Bench Press",
-      "Dip (Triceps emphasis)",
-      "Triceps Pressdown (Cable)",
-      "Overhead Triceps Extension (Cable)",
-      "Skull Crushers (EZ-Bar)",
-      "EZ-Bar Curl",
-      "Dumbbell Curl (Alternating)",
-      "Incline Dumbbell Curl",
-      "Hammer Curl",
-      "Cable Curl",
-      "Weighted Chin-Up (Biceps emphasis)",
-      "Reverse Curl (EZ-Bar)"
+      "Close-Grip Bench Press","Dip (Triceps emphasis)","Triceps Pressdown (Cable)",
+      "Overhead Triceps Extension (Cable)","Skull Crushers (EZ-Bar)","EZ-Bar Curl",
+      "Dumbbell Curl (Alternating)","Incline Dumbbell Curl","Hammer Curl","Cable Curl",
+      "Weighted Chin-Up (Biceps emphasis)","Reverse Curl (EZ-Bar)"
     ]
   };
 
   const auxGroups = {
-    "Biceps": [
-      "Incline Dumbbell Curl",
-      "Hammer Curl",
-      "Preacher Curl (EZ-Bar)",
-      "Cable Curl (Rope/Bar)",
-      "Bayesian Cable Curl",
-      "Concentration Curl",
-      "Spider Curl",
-      "EZ-Bar Reverse Curl"
-    ],
-    "Chest": [
-      "Cable Fly (High-to-Low)",
-      "Cable Fly (Low-to-High)",
-      "Pec Deck / Machine Fly",
-      "Machine Chest Press",
-      "Dumbbell Fly (Flat/Incline)",
-      "Push-Up (Slow Tempo)"
-    ],
-    "Triceps": [
-      "Overhead Cable Extension",
-      "Rope Pressdown",
-      "Single-Arm Pressdown",
-      "Dumbbell Overhead Extension",
-      "Skull Crushers (Light)",
-      "Cable Kickback",
-      "Close-Grip Push-Up"
-    ],
-    "Calves": [
-      "Standing Calf Raise",
-      "Seated Calf Raise",
-      "Leg Press Calf Press",
-      "Donkey Calf Raise",
-      "Single-Leg Calf Raise",
-      "Tibialis Raise"
-    ],
+    "Biceps": ["Incline Dumbbell Curl","Hammer Curl","Preacher Curl (EZ-Bar)","Cable Curl (Rope/Bar)","Bayesian Cable Curl","Concentration Curl","Spider Curl","EZ-Bar Reverse Curl"],
+    "Chest": ["Cable Fly (High-to-Low)","Cable Fly (Low-to-High)","Pec Deck / Machine Fly","Machine Chest Press","Dumbbell Fly (Flat/Incline)","Push-Up (Slow Tempo)"],
+    "Triceps": ["Overhead Cable Extension","Rope Pressdown","Single-Arm Pressdown","Dumbbell Overhead Extension","Skull Crushers (Light)","Cable Kickback","Close-Grip Push-Up"],
+    "Calves": ["Standing Calf Raise","Seated Calf Raise","Leg Press Calf Press","Donkey Calf Raise","Single-Leg Calf Raise","Tibialis Raise"],
     "Abs": [
-      "Cable Crunch",
-      "Kneeling Cable Crunch",
-      "Machine Crunch",
-      "Hanging Knee Raise",
-      "Hanging Leg Raise",
-      "Captain\'s Chair Knee Raise",
-      "Ab Wheel Rollout",
-      "Stability Ball Rollout",
-      "Reverse Crunch",
-      "V-Up",
-      "Dead Bug (Controlled)",
-      "Hollow Hold (Timed)",
-      "Plank (Timed)",
-      "Side Plank (Timed)",
-      "Pallof Press",
+      "Cable Crunch","Kneeling Cable Crunch","Machine Crunch","Hanging Knee Raise",
+      "Hanging Leg Raise","Captain's Chair Knee Raise","Ab Wheel Rollout",
+      "Stability Ball Rollout","Reverse Crunch","V-Up","Dead Bug (Controlled)",
+      "Hollow Hold (Timed)","Plank (Timed)","Side Plank (Timed)","Pallof Press",
       "Suitcase Carry (Timed)"
     ],
-    "Forearms": [
-      "Wrist Curl",
-      "Reverse Wrist Curl",
-      "Farmer Carry (Timed)",
-      "Plate Pinch Hold (Timed)",
-      "Wrist Roller"
-    ],
-    "Rear Delts": [
-      "Face Pull",
-      "Reverse Pec Deck",
-      "Rear Delt Cable Fly",
-      "Bent-Over Rear Delt Raise",
-      "Chest-Supported Rear Delt Raise"
-    ],
-    "Upper Back / Traps": [
-      "Dumbbell Shrug",
-      "Barbell Shrug",
-      "Cable Y-Raise",
-      "Prone Trap Raise",
-      "Face Pull (High)"
-    ],
-    "Quads": [
-      "Leg Extension",
-      "Hack Squat (Light/Moderate)",
-      "Leg Press (Quad bias)",
-      "Front Squat (Light/Moderate)",
-      "Sissy Squat (Assisted)",
-      "Split Squat (Quad bias)",
-      "Step-Up (Quad bias)"
-    ],
-    "Hamstrings": [
-      "Seated Leg Curl",
-      "Lying Leg Curl",
-      "Romanian Deadlift (Light/Moderate)",
-      "Good Morning (Light)",
-      "Glute-Ham Raise",
-      "Cable Pull-Through",
-      "Single-Leg RDL"
-    ]
+    "Forearms": ["Wrist Curl","Reverse Wrist Curl","Farmer Carry (Timed)","Plate Pinch Hold (Timed)","Wrist Roller"],
+    "Rear Delts": ["Face Pull","Reverse Pec Deck","Rear Delt Cable Fly","Bent-Over Rear Delt Raise","Chest-Supported Rear Delt Raise"],
+    "Upper Back / Traps": ["Dumbbell Shrug","Barbell Shrug","Cable Y-Raise","Prone Trap Raise","Face Pull (High)"],
+    "Quads": ["Leg Extension","Hack Squat (Light/Moderate)","Leg Press (Quad bias)","Front Squat (Light/Moderate)","Sissy Squat (Assisted)","Split Squat (Quad bias)","Step-Up (Quad bias)"],
+    "Hamstrings": ["Seated Leg Curl","Lying Leg Curl","Romanian Deadlift (Light/Moderate)","Good Morning (Light)","Glute-Ham Raise","Cable Pull-Through","Single-Leg RDL"]
   };
 
   const setOptions = ["1","2","3","4","5","6"];
-  // Keep reps dropdown simple but cover the recommended ranges
   const repOptions = ["5","6","8","10","12","15","20"];
-  // Rest options in seconds
   const restOptions = ["45","60","90","120","150","180","240"];
 
-  // Template defaults (the “clean upgrade”)
-  // Light:    primary 1x (2 sets, 12 reps, 90s) + aux 2x (2 sets, 15 reps, 60s)
-  // Moderate: primary 2x (3 sets, 8 reps, 150s) + aux 3x (3 sets, 12 reps, 90s)
-  // Intense:  primary 2x (3 sets, 6 reps, 180s) + aux 4x (3 sets, 10 reps, 90s)
   const templates = {
     light:    { pCount: 1, aCount: 2, pSets: 2, pReps: 12, pRest: 90,  aSets: 2, aReps: 15, aRest: 60 },
     moderate: { pCount: 2, aCount: 3, pSets: 3, pReps: 8,  pRest: 150, aSets: 3, aReps: 12, aRest: 90 },
     intense:  { pCount: 2, aCount: 4, pSets: 3, pReps: 6,  pRest: 180, aSets: 3, aReps: 10, aRest: 90 }
   };
 
-  // ----------------------------
+  const USER_DEFAULT_KEY = "workout_last_user_v1";
+
+  // ─────────────────────────────────────────
   // DOM helpers
-  // ----------------------------
+  // ─────────────────────────────────────────
   const $ = (id) => document.getElementById(id);
 
   const toast = (msg) => {
@@ -586,13 +688,14 @@
     options.forEach(v => select.appendChild(makeOption(v)));
   };
 
-  // Searchable list helper (for <datalist>)
   const fillDataList = (datalistEl, options) => {
     datalistEl.innerHTML = "";
     options.forEach(v => datalistEl.appendChild(makeOption(v)));
   };
 
-  // Favorites (per user) — stored locally
+  // ─────────────────────────────────────────
+  // Favorites
+  // ─────────────────────────────────────────
   const FAVS_KEY = "workout_favs_v1";
   let showFavsOnly = false;
 
@@ -602,16 +705,9 @@
   }
 
   function loadFavs(){
-    try{
-      const raw = localStorage.getItem(FAVS_KEY);
-      const obj = JSON.parse(raw || "{}");
-      return (obj && typeof obj === "object") ? obj : {};
-    }catch(e){ return {}; }
+    try{ const raw = localStorage.getItem(FAVS_KEY); const obj = JSON.parse(raw || "{}"); return (obj && typeof obj === "object") ? obj : {}; }catch(e){ return {}; }
   }
-
-  function saveFavs(obj){
-    localStorage.setItem(FAVS_KEY, JSON.stringify(obj));
-  }
+  function saveFavs(obj){ localStorage.setItem(FAVS_KEY, JSON.stringify(obj)); }
 
   function ensureUserFavs(all, user){
     if (!all[user]) all[user] = { primary:{}, aux:{} };
@@ -621,269 +717,230 @@
   }
 
   function getFavArr(kind, group){
-    const all = loadFavs();
-    const user = getActiveUser();
+    const all = loadFavs(); const user = getActiveUser();
     const u = ensureUserFavs(all, user);
     const bucket = (kind === "primary") ? u.primary : u.aux;
     return bucket[group] || [];
   }
 
-  function isFav(kind, group, exercise){
-    return getFavArr(kind, group).includes(exercise);
-  }
+  function isFav(kind, group, exercise){ return getFavArr(kind, group).includes(exercise); }
 
   function toggleFav(kind, group, exercise){
-    const all = loadFavs();
-    const user = getActiveUser();
+    const all = loadFavs(); const user = getActiveUser();
     const u = ensureUserFavs(all, user);
     const bucket = (kind === "primary") ? u.primary : u.aux;
     const arr = (bucket[group] || []).slice();
     const idx = arr.indexOf(exercise);
-    if (idx >= 0) arr.splice(idx,1);
-    else arr.push(exercise);
+    if (idx >= 0) arr.splice(idx,1); else arr.push(exercise);
     bucket[group] = arr;
     saveFavs(all);
   }
 
   function sortWithFavs(list, favArr){
     const favSet = new Set(favArr || []);
-    const favs = [];
-    const rest = [];
+    const favs = []; const rest = [];
     (list || []).forEach(x => (favSet.has(x) ? favs : rest).push(x));
     return showFavsOnly ? favs : favs.concat(rest);
   }
 
-
   const fmtRest = (sec) => {
-    const s = Number(sec || 0);
-    if (!s) return "";
+    const s = Number(sec || 0); if (!s) return "";
     if (s < 60) return `${s}s`;
     if (s % 60 === 0) return `${s/60}m`;
-    const m = Math.floor(s/60);
-    const r = s % 60;
+    const m = Math.floor(s/60); const r = s % 60;
     return `${m}m ${r}s`;
   };
 
-  // ----------------------------
-  // Build group dropdowns
-  // ----------------------------
+  // ─────────────────────────────────────────
+  // Group dropdowns
+  // ─────────────────────────────────────────
   function initGroupSelects(){
     const pg = $("primaryGroup");
     pg.innerHTML = "";
     Object.keys(primaryGroups).forEach(g => pg.appendChild(makeOption(g)));
   }
 
-  // ----------------------------
+  // ─────────────────────────────────────────
   // Row builders
-  // ----------------------------
+  // ─────────────────────────────────────────
   function createExerciseRow({kind, groupValue, exerciseValue, setsValue, repsValue, restValue}){
     const row = document.createElement("div");
-    row.className = `row ${kind === "primary" ? "primary" : "aux"}`;
+    row.className = kind === "aux" ? "row auxRow" : "row";
     row.dataset.kind = kind;
 
     let groupSel = null;
 
-    // For aux, include group dropdown per row
+    // Group selector (aux only)
     if (kind === "aux"){
-      const groupWrap = document.createElement("div");
-      const lab = document.createElement("label");
-      lab.textContent = "Aux group";
-      groupSel = document.createElement("select");
-      groupSel.className = "auxGroupSel";
-
-      groupWrap.appendChild(lab);
-      groupWrap.appendChild(groupSel);
-
-      row.appendChild(groupWrap);
-
-      // Fill aux group options
-      groupSel.innerHTML = "";
+      const groupDiv = document.createElement("div");
+      groupDiv.className = "exGroup";
+      const lab = document.createElement("label"); lab.textContent = "Muscle group";
+      groupSel = document.createElement("select"); groupSel.className = "auxGroupSel";
+      groupDiv.appendChild(lab); groupDiv.appendChild(groupSel);
+      row.appendChild(groupDiv);
       Object.keys(auxGroups).forEach(g => groupSel.appendChild(makeOption(g)));
       if (groupValue && auxGroups[groupValue]) groupSel.value = groupValue;
     }
 
-    // Exercise (searchable: input + datalist)
-    const exWrap = document.createElement("div");
+    // Exercise name — dropdown + "Other" text fallback
+    const exDiv = document.createElement("div");
+    exDiv.className = "exName";
     const exLab = document.createElement("label");
-    exLab.textContent = (kind === "primary") ? "Exercise" : "Aux exercise";
+    exLab.textContent = "Exercise";
 
+    // Dropdown select
+    const exSel = document.createElement("select");
+    exSel.className = "exerciseSel";
+
+    // Hidden text input shown only when "Other" is selected
     const exInput = document.createElement("input");
     exInput.className = "exerciseInput";
     exInput.type = "text";
-    exInput.placeholder = "Type to search…";
+    exInput.placeholder = "Enter exercise name…";
+    exInput.style.cssText = "display:none;margin-top:8px;";
 
-    // Unique datalist per row
-    const dlId = `dl_${kind}_${Math.random().toString(16).slice(2)}_${Date.now()}`;
-    const exList = document.createElement("datalist");
-    exList.id = dlId;
-    exInput.setAttribute("list", dlId);
+    exDiv.appendChild(exLab);
+    exDiv.appendChild(exSel);
+    exDiv.appendChild(exInput);
+    row.appendChild(exDiv);
 
-    exWrap.appendChild(exLab);
-    exWrap.appendChild(exInput);
+    // Sets / Reps / Rest in one row
+    const ctrlDiv = document.createElement("div");
+    ctrlDiv.className = "exControls";
 
-    const favBtn = document.createElement("button");
-    favBtn.type = "button";
-    favBtn.className = "btn";
-    favBtn.style.padding = "10px 12px";
-    favBtn.style.borderRadius = "14px";
-    favBtn.style.marginTop = "8px";
-    favBtn.textContent = "☆ Favorite";
-    exWrap.appendChild(favBtn);
-
-    exWrap.appendChild(exList);
-// Sets
     const setsWrap = document.createElement("div");
-    const setsLab = document.createElement("label");
-    setsLab.textContent = "Sets";
-    const setsSel = document.createElement("select");
-    setsSel.className = "setsSel";
+    const setsLab = document.createElement("label"); setsLab.textContent = "Sets";
+    const setsSel = document.createElement("select"); setsSel.className = "setsSel";
     fillSelect(setsSel, setOptions, "");
-    setsWrap.appendChild(setsLab);
-    setsWrap.appendChild(setsSel);
+    setsWrap.appendChild(setsLab); setsWrap.appendChild(setsSel);
 
-    // Reps
     const repsWrap = document.createElement("div");
-    const repsLab = document.createElement("label");
-    repsLab.textContent = "Reps";
-    const repsSel = document.createElement("select");
-    repsSel.className = "repsSel";
+    const repsLab = document.createElement("label"); repsLab.textContent = "Reps";
+    const repsSel = document.createElement("select"); repsSel.className = "repsSel";
     fillSelect(repsSel, repOptions, "");
-    repsWrap.appendChild(repsLab);
-    repsWrap.appendChild(repsSel);
+    repsWrap.appendChild(repsLab); repsWrap.appendChild(repsSel);
 
-    // Rest
     const restWrap = document.createElement("div");
-    const restLab = document.createElement("label");
-    restLab.textContent = "Rest";
-    const restSel = document.createElement("select");
-    restSel.className = "restSel";
-    // show as seconds in value, pretty label in text
+    const restLab = document.createElement("label"); restLab.textContent = "Rest";
+    const restSel = document.createElement("select"); restSel.className = "restSel";
     restSel.innerHTML = "";
     restOptions.forEach(v => restSel.appendChild(makeOption(v, fmtRest(v))));
-    restWrap.appendChild(restLab);
-    restWrap.appendChild(restSel);
+    restWrap.appendChild(restLab); restWrap.appendChild(restSel);
 
-    // Remove
+    ctrlDiv.appendChild(setsWrap); ctrlDiv.appendChild(repsWrap); ctrlDiv.appendChild(restWrap);
+    row.appendChild(ctrlDiv);
+
+    // Actions: fav + remove
+    const actDiv = document.createElement("div");
+    actDiv.className = "exActions";
+
+    const favBtn = document.createElement("button");
+    favBtn.type = "button"; favBtn.className = "btn btnGhost btnSm favBtn";
+    favBtn.textContent = "☆";
+    actDiv.appendChild(favBtn);
+
     const removeBtn = document.createElement("button");
-    removeBtn.type = "button";
-    removeBtn.className = "btn btnDanger removeBtn";
-    removeBtn.textContent = "Remove";
-    removeBtn.addEventListener("click", () => {
-      row.remove();
-      updateCounts();
-    });
+    removeBtn.type = "button"; removeBtn.className = "btn btnDanger btnSm removeBtn"; removeBtn.textContent = "✕ Remove";
+    removeBtn.addEventListener("click", () => { row.remove(); updateCounts(); });
+    actDiv.appendChild(removeBtn);
+    row.appendChild(actDiv);
 
-    // Append in correct order:
-    if (kind === "primary"){
-      row.appendChild(exWrap);
-      row.appendChild(setsWrap);
-      row.appendChild(repsWrap);
-      row.appendChild(restWrap);
-      row.appendChild(removeBtn);
-    } else {
-      row.appendChild(exWrap);
-      row.appendChild(setsWrap);
-      row.appendChild(repsWrap);
-      row.appendChild(restWrap);
-      row.appendChild(removeBtn);
-    }
-
-    // Populate exercise list based on kind
     const getExerciseList = () => {
-      if (kind === "primary"){
-        const pg = $("primaryGroup").value;
-        return primaryGroups[pg] ?? [];
-      } else {
-        const g = groupSel ? groupSel.value : Object.keys(auxGroups)[0];
-        return auxGroups[g] ?? [];
-      }
+      if (kind === "primary"){ return primaryGroups[$("primaryGroup").value] ?? []; }
+      else { return auxGroups[groupSel ? groupSel.value : Object.keys(auxGroups)[0]] ?? []; }
+    };
+
+    // Returns the current exercise value regardless of dropdown vs text mode
+    const getExerciseValue = () => {
+      if (exSel.value === "__other__") return (exInput.value || "").trim();
+      return exSel.value;
     };
 
     const refreshExercises = () => {
       const list = getExerciseList();
+      const g = kind === "primary" ? $("primaryGroup").value : (groupSel ? groupSel.value : "");
+      const sorted = sortWithFavs(list, getFavArr(kind, g));
 
-      // Favorites: show favorites first (or only) for this user/group
-      const user = getActiveUser();
-      if (kind === "primary"){
-        const g = $("primaryGroup").value;
-        const favArr = getFavArr("primary", g);
-        fillDataList(exList, sortWithFavs(list, favArr));
+      // Rebuild dropdown
+      exSel.innerHTML = "";
+      exSel.appendChild(makeOption("", "— Select exercise —"));
+      sorted.forEach(ex => {
+        const o = makeOption(ex);
+        if (isFav(kind, g, ex)) o.textContent = "★ " + ex;
+        exSel.appendChild(o);
+      });
+      exSel.appendChild(makeOption("__other__", "✏ Other (type below)"));
+
+      // Set value
+      if (exerciseValue) {
+        if (list.includes(exerciseValue)) {
+          exSel.value = exerciseValue;
+          exInput.style.display = "none";
+        } else if (exerciseValue) {
+          // Custom value not in list — show text input
+          exSel.value = "__other__";
+          exInput.style.display = "block";
+          exInput.value = exerciseValue;
+        }
       } else {
-        const g = groupSel ? groupSel.value : "";
-        const favArr = getFavArr("aux", g);
-        fillDataList(exList, sortWithFavs(list, favArr));
+        exSel.value = "";
+        exInput.style.display = "none";
       }
-// Preserve existing typed value if it matches; otherwise apply preset/default
-      if (exerciseValue && list.includes(exerciseValue)) exInput.value = exerciseValue;
-      else if (exInput.value && list.includes(exInput.value)) { /* keep */ }
-      else exInput.value = "";
     };
 
     refreshExercises();
 
-    const updateFavBtn = () => {
-      const ex = (exInput.value || "").trim();
-      if (!ex){ favBtn.textContent = "☆ Favorite"; return; }
-      if (kind === "primary"){
-        const g = $("primaryGroup").value;
-        favBtn.textContent = isFav("primary", g, ex) ? "★ Favorited" : "☆ Favorite";
+    // Toggle text input when "Other" is selected
+    exSel.addEventListener("change", () => {
+      if (exSel.value === "__other__") {
+        exInput.style.display = "block";
+        exInput.focus();
       } else {
-        const g = groupSel ? groupSel.value : "";
-        favBtn.textContent = isFav("aux", g, ex) ? "★ Favorited" : "☆ Favorite";
+        exInput.style.display = "none";
+        exInput.value = "";
       }
+      updateFavBtn();
+    });
+
+    const updateFavBtn = () => {
+      const ex = getExerciseValue();
+      if (!ex || exSel.value === "__other__") { favBtn.textContent = "☆"; return; }
+      const g = kind === "primary" ? $("primaryGroup").value : (groupSel ? groupSel.value : "");
+      favBtn.textContent = isFav(kind, g, ex) ? "★" : "☆";
     };
 
     favBtn.addEventListener("click", () => {
-      const ex = (exInput.value || "").trim();
+      const ex = getExerciseValue();
       if (!ex){ toast("Pick an exercise first"); return; }
-      if (kind === "primary"){
-        const g = $("primaryGroup").value;
-        toggleFav("primary", g, ex);
-      } else {
-        const g = groupSel ? groupSel.value : "";
-        toggleFav("aux", g, ex);
-      }
+      const g = kind === "primary" ? $("primaryGroup").value : (groupSel ? groupSel.value : "");
+      toggleFav(kind, g, ex);
+      const nowFav = isFav(kind, g, ex);
       refreshExercises();
       updateFavBtn();
-      toast("Updated favorites");
+      toast(nowFav ? "★ Added to favorites" : "Removed from favorites");
     });
 
-    exInput.addEventListener("change", updateFavBtn);
-    exInput.addEventListener("keyup", updateFavBtn);
+    exInput.addEventListener("input", updateFavBtn);
     updateFavBtn();
 
-    // For aux: changing group updates exercises
     if (groupSel){
-      groupSel.addEventListener("change", () => {
-        exerciseValue = ""; // reset
-        refreshExercises();
-      });
+      groupSel.addEventListener("change", () => { exerciseValue = ""; refreshExercises(); });
     }
 
-    // Defaults (manual add)
-    if (setsValue) setsSel.value = String(setsValue);
-    else setsSel.value = (kind === "primary") ? "3" : "3";
-
-    if (repsValue) repsSel.value = String(repsValue);
-    else repsSel.value = (kind === "primary") ? "10" : "12";
-
-    if (restValue) restSel.value = String(restValue);
-    else restSel.value = (kind === "primary") ? "150" : "90";
+    if (setsValue) setsSel.value = String(setsValue); else setsSel.value = (kind === "primary") ? "3" : "3";
+    if (repsValue) repsSel.value = String(repsValue); else repsSel.value = (kind === "primary") ? "10" : "12";
+    if (restValue) restSel.value = String(restValue); else restSel.value = (kind === "primary") ? "150" : "90";
 
     return row;
   }
 
   function addPrimaryRow(preset={}){
-    const c = $("primaryContainer");
-    const row = createExerciseRow({kind:"primary", ...preset});
-    c.appendChild(row);
+    $("primaryContainer").appendChild(createExerciseRow({kind:"primary", ...preset}));
     updateCounts();
   }
 
   function addAuxRow(preset={}){
-    const c = $("auxContainer");
-    const row = createExerciseRow({kind:"aux", ...preset});
-    c.appendChild(row);
+    $("auxContainer").appendChild(createExerciseRow({kind:"aux", ...preset}));
     updateCounts();
   }
 
@@ -892,105 +949,49 @@
     $("auxCountPill").textContent = `Aux: ${$("auxContainer").children.length}`;
   }
 
-  // ----------------------------
-  // Auto template behavior
-  // ----------------------------
+  // ─────────────────────────────────────────
+  // Auto template
+  // ─────────────────────────────────────────
   function applyTemplate(mode){
     if (mode === "manual") return;
-
-    const plan = templates[mode];
-    if (!plan) return;
-
-    // Clear existing
-    $("primaryContainer").innerHTML = "";
-    $("auxContainer").innerHTML = "";
-
+    const plan = templates[mode]; if (!plan) return;
+    $("primaryContainer").innerHTML = ""; $("auxContainer").innerHTML = "";
     const primaryGroup = $("primaryGroup").value;
     const primaryList = primaryGroups[primaryGroup] ?? [];
-
-    // Simple deterministic pick helper (no randomness, stable results)
-    const pickN = (arr, n, start=0) => {
-      const out = [];
-      if (!arr.length) return out;
-      for (let i=0; i<n; i++){
-        out.push(arr[(start + i) % arr.length]);
-      }
-      return out;
-    };
-
-    // Suggested auxiliary group stacks by primary group
+    const pickN = (arr, n, start=0) => { const out=[]; if(!arr.length)return out; for(let i=0;i<n;i++) out.push(arr[(start+i)%arr.length]); return out; };
     const auxPlanByPrimary = {
-      // Only main/secondary groups here. Abs is added separately as an extra.
-      "Chest": ["Triceps", "Shoulders", "Chest"],
-      "Back": ["Biceps", "Rear Delts", "Upper Back / Traps"],
-      "Legs": ["Quads", "Hamstrings", "Calves"],
-      "Shoulders": ["Triceps", "Rear Delts", "Upper Back / Traps"],
-      "Arms": ["Biceps", "Triceps", "Forearms"]
+      "Chest":["Triceps","Shoulders","Chest"],"Back":["Biceps","Rear Delts","Upper Back / Traps"],
+      "Legs":["Quads","Hamstrings","Calves"],"Shoulders":["Triceps","Rear Delts","Upper Back / Traps"],
+      "Arms":["Biceps","Triceps","Forearms"]
     };
-
     const auxGroupsOrder = auxPlanByPrimary[primaryGroup] || Object.keys(auxGroups);
-
-    // Primary rows: pick the first N exercises for the selected group
     const primChoices = pickN(primaryList, plan.pCount, 0);
-    for (let i=0; i<plan.pCount; i++){
-      addPrimaryRow({
-        setsValue: plan.pSets,
-        repsValue: plan.pReps,
-        restValue: plan.pRest,
-        exerciseValue: primChoices[i] || ""
-      });
-    }
-
-    // Aux rows: cycle through recommended aux groups and pick first exercise from each group
-    for (let i=0; i<plan.aCount; i++){
+    for (let i=0;i<plan.pCount;i++) addPrimaryRow({setsValue:plan.pSets,repsValue:plan.pReps,restValue:plan.pRest,exerciseValue:primChoices[i]||""});
+    for (let i=0;i<plan.aCount;i++){
       const g = auxGroupsOrder[i % auxGroupsOrder.length];
       const exList = auxGroups[g] ?? [];
-      const ex = exList.length ? exList[i % exList.length] : "";
-      addAuxRow({
-        groupValue: g,
-        exerciseValue: ex,
-        setsValue: plan.aSets,
-        repsValue: plan.aReps,
-        restValue: plan.aRest
-      });
+      addAuxRow({groupValue:g,exerciseValue:exList.length?exList[i%exList.length]:"",setsValue:plan.aSets,repsValue:plan.aReps,restValue:plan.aRest});
     }
-
     toast(`Auto-filled: ${mode}`);
   }
 
-  // ----------------------------
+  // ─────────────────────────────────────────
   // Serialization
-  // ----------------------------
+  // ─────────────────────────────────────────
   function readRows(containerEl, kind){
-    const rows = Array.from(containerEl.children);
-    return rows.map(row => {
-      const obj = {
-        kind,
-        exercise: (row.querySelector(".exerciseInput")?.value || "").trim(),
-        sets: row.querySelector(".setsSel")?.value || "",
-        reps: row.querySelector(".repsSel")?.value || "",
-        restSec: row.querySelector(".restSel")?.value || ""
-      };
-      if (kind === "aux"){
-        obj.group = row.querySelector(".auxGroupSel")?.value || "";
-      }
+    return Array.from(containerEl.children).map(row => {
+      const sel = row.querySelector(".exerciseSel");
+      const txt = row.querySelector(".exerciseInput");
+      const exercise = sel && sel.value === "__other__" ? (txt?.value||"").trim() : (sel?.value||"").trim();
+      const obj = {kind, exercise, sets:row.querySelector(".setsSel")?.value||"", reps:row.querySelector(".repsSel")?.value||"", restSec:row.querySelector(".restSel")?.value||""};
+      if (kind==="aux") obj.group = row.querySelector(".auxGroupSel")?.value||"";
       return obj;
     }).filter(x => x.exercise);
   }
 
-  const STORAGE_KEY = "workout_log_v2"; // bumped due to schema change (restSec)
-
-  function loadLog(){
-    try{
-      return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
-    }catch(e){
-      return [];
-    }
-  }
-
-  function saveLog(items){
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
-  }
+  const STORAGE_KEY = "workout_log_v2";
+  function loadLog(){ try{ return JSON.parse(localStorage.getItem(STORAGE_KEY)||"[]"); }catch(e){ return []; } }
+  function saveLog(items){ localStorage.setItem(STORAGE_KEY, JSON.stringify(items)); }
 
   function workoutSummary(item){
     const p = item.primary.map(x => `${x.exercise} (${x.sets}×${x.reps}, rest ${fmtRest(x.restSec)})`);
@@ -998,114 +999,71 @@
     return {p, a};
   }
 
-  // ----------------------------
+  // ─────────────────────────────────────────
   // Log UI
-  // ----------------------------
+  // ─────────────────────────────────────────
+  function populateUserFilters(){
+    const items = loadLog();
+    const users = Array.from(new Set(items.map(x=>(x.userName||"Default").trim()||"Default"))).sort((a,b)=>a.localeCompare(b));
+    ["logUserFilter","volUserFilter"].forEach(id => {
+      const sel = $(id); if (!sel) return;
+      const prev = sel.value;
+      sel.innerHTML = "";
+      sel.appendChild(makeOption("__all__","All users"));
+      users.forEach(u => sel.appendChild(makeOption(u,u)));
+      sel.value = users.includes(prev) ? prev : "__all__";
+    });
+  }
+
   function renderLog(){
     const list = $("logList");
     const items = loadLog();
-
-    // Populate user filter options from items
+    populateUserFilters();
     const filterSel = $("logUserFilter");
-    const currentFilter = filterSel ? filterSel.value : "__all__";
-    if (filterSel){
-      const users = Array.from(new Set(items.map(x => (x.userName || "Default").trim() || "Default"))).sort((a,b)=>a.localeCompare(b));
-      filterSel.innerHTML = "";
-      filterSel.appendChild(makeOption("__all__", "All users"));
-      users.forEach(u => filterSel.appendChild(makeOption(u, u)));
-      // Keep selection if possible
-      const keep = users.includes(currentFilter) ? currentFilter : "__all__";
-      filterSel.value = keep;
-    }
-
     const activeUser = (filterSel && filterSel.value !== "__all__") ? filterSel.value : "__all__";
-    const shownItems = (activeUser === "__all__") ? items : items.filter(x => ((x.userName||"Default").trim()||"Default") === activeUser);
-if (!shownItems.length){
+    const shownItems = (activeUser === "__all__") ? items : items.filter(x=>((x.userName||"Default").trim()||"Default")===activeUser);
+
+    if (!shownItems.length){
       list.innerHTML = `<div class="empty">No saved workouts yet. Build one on the left, then hit <b>Save to log</b>.</div>`;
       return;
     }
 
     list.innerHTML = "";
     shownItems.slice().reverse().forEach((item, idxFromEnd) => {
-      const idx = items.length - 1 - idxFromEnd; // real index
-
-      const div = document.createElement("div");
-      div.className = "logItem";
-
-      const top = document.createElement("div");
-      top.className = "top";
-
+      const idx = items.length - 1 - idxFromEnd;
+      const div = document.createElement("div"); div.className = "logItem";
+      const top = document.createElement("div"); top.className = "top";
       const left = document.createElement("div");
-      const h3 = document.createElement("h3");
-      h3.textContent = `${item.date} — ${item.primaryGroup}`;
-      const meta = document.createElement("div");
-      meta.className = "meta";
-      meta.textContent = `${item.userName || "Default"} • ${item.intensityLabel}${item.notes ? " • Notes included" : ""}`;
-
-      left.appendChild(h3);
-      left.appendChild(meta);
+      const h3 = document.createElement("h3"); h3.textContent = `${item.date} — ${item.primaryGroup}`;
+      const meta = document.createElement("div"); meta.className = "meta";
+      meta.textContent = `${item.userName||"Default"} • ${item.intensityLabel}${item.notes?" • Notes included":""}`;
+      left.appendChild(h3); left.appendChild(meta);
 
       const actions = document.createElement("div");
-      actions.style.display = "flex";
-      actions.style.gap = "8px";
-      actions.style.flexWrap = "wrap";
-      actions.style.justifyContent = "flex-end";
+      actions.className = "actions";
 
-      const loadBtn = document.createElement("button");
-      loadBtn.type = "button";
-      loadBtn.className = "btn";
-      loadBtn.textContent = "Load";
-      loadBtn.addEventListener("click", () => {
-        loadWorkoutToForm(item);
-        toast("Loaded workout");
+      const loadBtn = document.createElement("button"); loadBtn.type="button"; loadBtn.className="btn"; loadBtn.textContent="Load";
+      loadBtn.addEventListener("click",()=>{ loadWorkoutToForm(item); toast("Loaded workout"); });
+
+      const pdfBtn = document.createElement("button"); pdfBtn.type="button"; pdfBtn.className="btn btnShare"; pdfBtn.textContent="📄 PDF";
+      pdfBtn.addEventListener("click",()=>{ openPdfPreview(item); toast("PDF preview opened"); });
+
+      const delBtn = document.createElement("button"); delBtn.type="button"; delBtn.className="btn btnDanger"; delBtn.textContent="Delete";
+      delBtn.addEventListener("click",()=>{
+        const items2=loadLog(); saveLog(items2.filter(x=>x.id!==item.id));
+        renderLog(); renderVolumePanel(); toast("Deleted");
       });
 
-      const delBtn = document.createElement("button");
-      delBtn.type = "button";
-      delBtn.className = "btn btnDanger";
-      delBtn.textContent = "Delete";
-      delBtn.addEventListener("click", () => {
-        const items2 = loadLog();
-        const delId = item.id;
-        const newItems = items2.filter(x => x.id !== delId);
-        saveLog(newItems);
-        renderLog();
-        toast("Deleted");
-        return;
-        saveLog(items2);
-        renderLog();
-        toast("Deleted");
-      });
+      actions.appendChild(loadBtn); actions.appendChild(pdfBtn); actions.appendChild(delBtn);
+      top.appendChild(left); top.appendChild(actions);
 
-      actions.appendChild(loadBtn);
-      actions.appendChild(delBtn);
-
-      top.appendChild(left);
-      top.appendChild(actions);
-
-      const {p, a} = workoutSummary(item);
-
+      const {p,a} = workoutSummary(item);
       const ul = document.createElement("ul");
-      p.forEach(line => {
-        const li = document.createElement("li");
-        li.textContent = `Primary: ${line}`;
-        ul.appendChild(li);
-      });
-      a.forEach(line => {
-        const li = document.createElement("li");
-        li.textContent = `Aux: ${line}`;
-        ul.appendChild(li);
-      });
+      p.forEach(line=>{ const li=document.createElement("li"); li.textContent=`Primary: ${line}`; ul.appendChild(li); });
+      a.forEach(line=>{ const li=document.createElement("li"); li.textContent=`Aux: ${line}`; ul.appendChild(li); });
+      if (item.notes){ const li=document.createElement("li"); li.textContent=`Notes: ${item.notes}`; ul.appendChild(li); }
 
-      if (item.notes){
-        const li = document.createElement("li");
-        li.textContent = `Notes: ${item.notes}`;
-        ul.appendChild(li);
-      }
-
-      div.appendChild(top);
-      div.appendChild(ul);
-
+      div.appendChild(top); div.appendChild(ul);
       list.appendChild(div);
     });
   }
@@ -1114,511 +1072,893 @@ if (!shownItems.length){
     $("workoutDate").value = item.date;
     $("intensity").value = "manual";
     $("primaryGroup").value = item.primaryGroup;
-    $("notes").value = item.notes || "";
+    $("notes").value = item.notes||"";
     try{
-      if (item.extraAbs){
-        $("extraAbsExercise").value = item.extraAbs.exercise || "";
-        $("extraAbsSets").value = String(item.extraAbs.sets || "3");
-        $("extraAbsReps").value = String(item.extraAbs.reps || "15");
-      }
-      if (item.cardio){
-        $("cardioType").value = item.cardio.type || "";
-        $("cardioMinutes").value = String(item.cardio.minutes || "20");
-        $("cardioIntensity").value = item.cardio.intensity || "Easy (Zone 2)";
-      }
+      if (item.extraAbs){ $("extraAbsExercise").value=item.extraAbs.exercise||""; $("extraAbsSets").value=String(item.extraAbs.sets||"3"); $("extraAbsReps").value=String(item.extraAbs.reps||"15"); }
+      if (item.cardio){ $("cardioType").value=item.cardio.type||""; $("cardioMinutes").value=String(item.cardio.minutes||"20"); $("cardioIntensity").value=item.cardio.intensity||"Easy (Zone 2)"; }
     }catch(e){}
-
-    $("userName").value = item.userName || "Default";
-    $("primaryContainer").innerHTML = "";
-    $("auxContainer").innerHTML = "";
-
-    item.primary.forEach(x => addPrimaryRow({
-      exerciseValue: x.exercise,
-      setsValue: x.sets,
-      repsValue: x.reps,
-      restValue: x.restSec
-    }));
-
-    item.aux.forEach(x => addAuxRow({
-      groupValue: x.group,
-      exerciseValue: x.exercise,
-      setsValue: x.sets,
-      repsValue: x.reps,
-      restValue: x.restSec
-    }));
-
+    $("userName").value = item.userName||"Default";
+    $("primaryContainer").innerHTML = ""; $("auxContainer").innerHTML = "";
+    item.primary.forEach(x => addPrimaryRow({exerciseValue:x.exercise,setsValue:x.sets,repsValue:x.reps,restValue:x.restSec}));
+    item.aux.forEach(x => addAuxRow({groupValue:x.group,exerciseValue:x.exercise,setsValue:x.sets,repsValue:x.reps,restValue:x.restSec}));
     updateCounts();
   }
 
-  // ----------------------------
-  // Events
-  // ----------------------------
-  $("addPrimaryBtn").addEventListener("click", () => addPrimaryRow());
-  $("addAuxBtn").addEventListener("click", () => addAuxRow());
+  // ─────────────────────────────────────────
+  // ── WEEKLY VOLUME PANEL ──────────────────
+  // ─────────────────────────────────────────
 
-  $("primaryGroup").addEventListener("change", () => {
-    // When primary group changes, refresh all primary exercise datalists
-    Array.from($("primaryContainer").children).forEach(row => {
-      const exInput = row.querySelector(".exerciseInput");
-      const exList = row.querySelector("datalist");
-      if (!exInput || !exList) return;
+  // weekOffset: 0 = current week, -1 = last week, etc.
+  let volWeekOffset = 0;
 
-      const list = primaryGroups[$("primaryGroup").value] ?? [];
-      const favArr = getFavArr("primary", $("primaryGroup").value);
-      fillDataList(exList, sortWithFavs(list, favArr));
+  // Get Monday of the week containing `date` (Date object)
+  function getMondayOf(date){
+    const d = new Date(date);
+    const day = d.getDay(); // 0=Sun
+    const diff = (day === 0) ? -6 : 1 - day; // shift so Mon=0
+    d.setDate(d.getDate() + diff);
+    d.setHours(0,0,0,0);
+    return d;
+  }
 
-      // If current value no longer matches, clear it so user re-selects
-      if (exInput.value && !list.includes(exInput.value)) exInput.value = "";
+  function fmtDateShort(date){
+    const m = String(date.getMonth()+1).padStart(2,"0");
+    const d = String(date.getDate()).padStart(2,"0");
+    return `${m}/${d}`;
+  }
+
+  function getWeekRange(offset){
+    // offset relative to current week
+    const now = new Date();
+    const mon = getMondayOf(now);
+    mon.setDate(mon.getDate() + offset * 7);
+    const sun = new Date(mon);
+    sun.setDate(sun.getDate() + 6);
+    sun.setHours(23,59,59,999);
+    return { mon, sun };
+  }
+
+  function isoDate(d){ // "YYYY-MM-DD"
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+  }
+
+  function renderVolumePanel(){
+    const { mon, sun } = getWeekRange(volWeekOffset);
+    const monStr = isoDate(mon);
+    const sunStr = isoDate(sun);
+
+    // Label
+    const isCurrentWeek = volWeekOffset === 0;
+    const isLastWeek    = volWeekOffset === -1;
+    $("volWeekLabel").textContent = isCurrentWeek ? "This week" : isLastWeek ? "Last week" : `Week of ${fmtDateShort(mon)}`;
+    $("volWeekSub").textContent   = `${fmtDateShort(mon)} – ${fmtDateShort(sun)}`;
+
+    // Disable next button if we're already on current week
+    $("volNextWeek").disabled = (volWeekOffset >= 0);
+    $("volNextWeek").style.opacity = (volWeekOffset >= 0) ? "0.4" : "1";
+
+    // Load + filter items
+    const allItems = loadLog();
+    const filterSel = $("volUserFilter");
+    const activeUser = (filterSel && filterSel.value !== "__all__") ? filterSel.value : "__all__";
+
+    const items = allItems.filter(item => {
+      const d = item.date; // "YYYY-MM-DD"
+      if (d < monStr || d > sunStr) return false;
+      if (activeUser !== "__all__"){
+        const u = ((item.userName||"Default").trim()||"Default");
+        if (u !== activeUser) return false;
+      }
+      return true;
     });
-  });
 
-  $("intensity").addEventListener("change", (e) => {
-    applyTemplate(e.target.value);
-    updateCounts();
-  });
+    // ── Tally sets per muscle group ──
+    // volumeMap: { groupName: totalSets }
+    const volumeMap = {};
+    let absTotal = 0;
+    let totalSets = 0;
+    let totalWorkouts = items.length;
+    let totalExercises = 0;
 
-  $("resetBtn").addEventListener("click", () => {
-    $("intensity").value = "manual";
-    $("notes").value = "";
-    $("primaryContainer").innerHTML = "";
-    $("auxContainer").innerHTML = "";
-    addPrimaryRow();
-    updateCounts();
-    toast("Reset");
-  });
+    const addSets = (group, sets) => {
+      const n = parseInt(sets, 10) || 0;
+      if (!n) return;
+      volumeMap[group] = (volumeMap[group] || 0) + n;
+      totalSets += n;
+    };
 
-  $("saveBtn").addEventListener("click", () => {
-    const date = $("workoutDate").value;
-    if (!date){
-      toast("Pick a date first");
+    items.forEach(item => {
+      // Primary group — count sets from primary exercises
+      item.primary.forEach(ex => {
+        addSets(item.primaryGroup, ex.sets);
+        totalExercises++;
+      });
+
+      // Aux exercises — count sets per aux group
+      item.aux.forEach(ex => {
+        if (!ex.group) return;
+        addSets(ex.group, ex.sets);
+        totalExercises++;
+      });
+
+      // Extra abs (separate)
+      if (item.extraAbs && item.extraAbs.exercise && item.extraAbs.sets){
+        const n = parseInt(item.extraAbs.sets, 10) || 0;
+        absTotal += n;
+        totalSets += n;
+        totalExercises++;
+      }
+    });
+
+    // ── KPI summary ──
+    const kpiEl = $("volSummaryRow");
+    kpiEl.innerHTML = "";
+    [
+      { val: totalWorkouts, label: "Workouts" },
+      { val: totalSets,     label: "Total sets" },
+      { val: totalExercises,label: "Exercises" },
+    ].forEach(({val,label}) => {
+      const d = document.createElement("div"); d.className = "volKpi";
+      d.innerHTML = `<div class="volKpiVal">${val}</div><div class="volKpiLabel">${label}</div>`;
+      kpiEl.appendChild(d);
+    });
+
+    // ── Bars ──
+    const barsEl = $("volBars");
+    barsEl.innerHTML = "";
+
+    const hasAnyData = Object.keys(volumeMap).length > 0 || absTotal > 0;
+
+    if (!hasAnyData){
+      barsEl.innerHTML = `<div class="volEmpty">No workouts logged this week yet.<br>Save a workout to see your volume breakdown.</div>`;
       return;
     }
 
-    const primary = readRows($("primaryContainer"), "primary");
-    if (!primary.length){
-      toast("Add at least 1 primary exercise");
-      return;
+    // Sort groups by sets descending
+    const sortedGroups = Object.entries(volumeMap).sort((a,b) => b[1]-a[1]);
+    const maxSets = Math.max(...sortedGroups.map(([,v])=>v), absTotal, 1);
+
+    sortedGroups.forEach(([group, sets]) => {
+      const pct = Math.round((sets / maxSets) * 100);
+      const tier = sets >= 10 ? "high" : sets >= 5 ? "mid" : "low";
+      const tierLabel = sets >= 10 ? "✓ Well trained" : sets >= 5 ? "Moderate" : "Light";
+
+      const div = document.createElement("div"); div.className = "volGroup";
+      div.innerHTML = `
+        <div class="volGroupHeader">
+          <span class="volGroupName">${group}</span>
+          <span class="volGroupSets">${sets} set${sets!==1?"s":""}</span>
+        </div>
+        <div class="volBarTrack">
+          <div class="volBarFill ${tier}" style="width:${pct}%"></div>
+        </div>
+        <div class="volTargetHint">${tierLabel}</div>
+      `;
+      barsEl.appendChild(div);
+    });
+
+    // Abs — always last, red bar
+    if (absTotal > 0){
+      const pct = Math.round((absTotal / maxSets) * 100);
+      const div = document.createElement("div"); div.className = "volGroup";
+      div.innerHTML = `
+        <div class="volGroupHeader">
+          <span class="volGroupName">Abs <span style="font-size:10px;color:var(--muted);font-weight:normal;">(extra)</span></span>
+          <span class="volGroupSets">${absTotal} set${absTotal!==1?"s":""}</span>
+        </div>
+        <div class="volBarTrack">
+          <div class="volBarFill abs" style="width:${pct}%"></div>
+        </div>
+        <div class="volTargetHint">${absTotal >= 8 ? "✓ On target" : "Keep going"}</div>
+      `;
+      barsEl.appendChild(div);
     }
-    const aux = readRows($("auxContainer"), "aux");
+  }
 
-    const intensityVal = $("intensity").value;
-    const intensityLabel = {
-      manual:"Manual",
-      light:"Light",
-      moderate:"Moderate",
-      intense:"Intense"
-    }[intensityVal] || "Manual";
-
-    const item = {
-      id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + "_" + Math.random().toString(16).slice(2),
-      date,
+  // ─────────────────────────────────────────
+  // PDF SHARE
+  // ─────────────────────────────────────────
+  function buildWorkoutDataFromForm(){
+    return {
+      date: $("workoutDate").value||"—",
+      userName: ($("userName").value||"").trim()||"Default",
       primaryGroup: $("primaryGroup").value,
-      intensity: intensityVal,
-      intensityLabel,
-      notes: ($("notes").value || "").trim(),
-      extraAbs: {
-        exercise: ($("extraAbsExercise").value || "").trim(),
-        sets: $("extraAbsSets").value || "",
-        reps: $("extraAbsReps").value || ""
-      },
-      cardio: {
-        type: $("cardioType").value || "",
-        minutes: $("cardioMinutes").value || "",
-        intensity: $("cardioIntensity").value || ""
-      },
-      userName: ($("userName").value || "").trim() || "Default",      primary,
-      aux,
-      createdAt: new Date().toISOString()
+      intensity: $("intensity").value,
+      intensityLabel: {manual:"Manual",light:"Light",moderate:"Moderate",intense:"Intense"}[$("intensity").value]||"Manual",
+      notes: ($("notes").value||"").trim(),
+      primary: readRows($("primaryContainer"),"primary"),
+      aux: readRows($("auxContainer"),"aux"),
+      extraAbs:{exercise:($("extraAbsExercise")?.value||"").trim(),sets:$("extraAbsSets")?.value||"",reps:$("extraAbsReps")?.value||""},
+      cardio:{type:$("cardioType")?.value||"",minutes:$("cardioMinutes")?.value||"",intensity:$("cardioIntensity")?.value||""}
     };
+  }
 
-    const items = loadLog();
-    items.push(item);
-    try{ localStorage.setItem(USER_DEFAULT_KEY, item.userName); }catch(e){ /* ignore */ }
-    saveLog(items);
-    renderLog();
-    toast("Saved to log");
-  });
+  function generatePdfHtml(item){
+    const esc=s=>(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+    const dayNames=["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+    let dayLabel="";
+    if(item.date&&item.date.length===10){const p=item.date.split("-");const d=new Date(Number(p[0]),Number(p[1])-1,Number(p[2]));dayLabel=`${dayNames[d.getDay()]}, ${d.toLocaleDateString("en-US",{month:"long",day:"numeric",year:"numeric"})}`;}
 
-  $("clearBtn").addEventListener("click", () => {
-    if (!confirm("Clear ALL saved workouts from this browser?")) return;
-    localStorage.removeItem(STORAGE_KEY);
-    renderLog();
-    toast("Cleared");
-  });
+    const primaryRows=item.primary.map((ex,i)=>`<tr class="${i%2===0?'e':'o'}"><td class="en">${esc(ex.exercise)}</td><td class="c">${esc(ex.sets)}</td><td class="c">${esc(ex.reps)}</td><td class="c">${fmtRest(ex.restSec)}</td><td class="lc"></td></tr>`).join("");
 
-  $("exportBtn").addEventListener("click", () => {
-    const items = loadLog();
-    $("exportText").value = JSON.stringify(items, null, 2);
-    $("exportBox").style.display = "block";
-    toast("Export ready");
-  });
-
-  $("hideExportBtn").addEventListener("click", () => {
-    $("exportBox").style.display = "none";
-  });
-
-  $("copyExportBtn").addEventListener("click", async () => {
-    try{
-      await navigator.clipboard.writeText($("exportText").value || "");
-      toast("Copied");
-    }catch(e){
-      toast("Copy blocked (browser permission)");
-    }
-  });
-  // User filter events
-  $("logUserFilter").addEventListener("change", () => {
-    renderLog();
-    toast("Filtered");
-  });
-
-  $("clearUserFilterBtn").addEventListener("click", () => {
-    $("logUserFilter").value = "__all__";
-    renderLog();
-    toast("All users");
-  });
-
-  // Favorites toggle (favorites first vs favorites only)
-  $("toggleFavsBtn").addEventListener("click", () => {
-    showFavsOnly = !showFavsOnly;
-    $("toggleFavsBtn").textContent = showFavsOnly ? "⭐ Favorites (only)" : "⭐ Favorites";
-
-    // Refresh existing rows
-    Array.from($("primaryContainer").children).forEach(row => {
-      const dl = row.querySelector("datalist");
-      if (!dl) return;
-      const list = primaryGroups[$("primaryGroup").value] ?? [];
-      const favArr = getFavArr("primary", $("primaryGroup").value);
-      fillDataList(dl, sortWithFavs(list, favArr));
+    const auxByGroup={};
+    item.aux.forEach(ex=>{const g=ex.group||"Other";if(!auxByGroup[g])auxByGroup[g]=[];auxByGroup[g].push(ex);});
+    let auxRows="";let ai=0;
+    Object.entries(auxByGroup).forEach(([group,exList])=>{
+      auxRows+=`<tr><td colspan="5" class="gh">${esc(group)}</td></tr>`;
+      exList.forEach(ex=>{auxRows+=`<tr class="${ai%2===0?'e':'o'}"><td class="en">${esc(ex.exercise)}</td><td class="c">${esc(ex.sets)}</td><td class="c">${esc(ex.reps)}</td><td class="c">${fmtRest(ex.restSec)}</td><td class="lc"></td></tr>`;ai++;});
     });
 
-    Array.from($("auxContainer").children).forEach(row => {
-      const dl = row.querySelector("datalist");
-      const gSel = row.querySelector(".auxGroupSel");
-      if (!dl || !gSel) return;
-      const list = auxGroups[gSel.value] ?? [];
-      const favArr = getFavArr("aux", gSel.value);
-      fillDataList(dl, sortWithFavs(list, favArr));
-    });
+    const hasAbs=item.extraAbs&&item.extraAbs.exercise;
+    const hasCardio=item.cardio&&item.cardio.type;
 
-    toast(showFavsOnly ? "Favorites only" : "Favorites + all");
+    return `<!doctype html><html><head><meta charset="utf-8"/>
+<title>Workout — ${esc(item.date)} — ${esc(item.userName)}</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:system-ui,sans-serif;font-size:11pt;color:#111;background:#fff;}
+@page{size:letter;margin:.7in .65in;}
+@media print{.no-print{display:none!important;}}
+.pbar{display:flex;align-items:center;justify-content:space-between;padding:12px 20px;background:#f0f4ff;border-bottom:2px solid #d0d8f0;gap:12px;}
+.pbar p{font-size:12px;color:#555;}
+.pbtn{cursor:pointer;background:#1a56db;color:#fff;border:none;padding:9px 20px;border-radius:8px;font:600 13px/1 system-ui,sans-serif;}
+.pbtn:hover{background:#1344b8;}
+.wrap{padding:24px 0 0;}
+.hdr{display:flex;align-items:flex-start;justify-content:space-between;padding-bottom:14px;border-bottom:3px solid #111;margin-bottom:18px;}
+.title{font-size:22pt;font-weight:700;letter-spacing:-.3px;line-height:1.1;}
+.sub{font-size:10pt;color:#555;margin-top:5px;}
+.badge{display:inline-block;padding:4px 10px;border-radius:99px;font-size:9pt;font-weight:600;letter-spacing:.3px;text-transform:uppercase;}
+.badge-manual{background:#f0f0f0;color:#444;}.badge-light{background:#e6fdf4;color:#0d7a55;}.badge-moderate{background:#e8f0ff;color:#1a56db;}.badge-intense{background:#fff0f0;color:#c0392b;}
+.meta{margin-top:8px;font-size:9.5pt;color:#555;}
+.slabel{font-size:8.5pt;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:#888;margin:18px 0 8px;}
+table{width:100%;border-collapse:collapse;font-size:10pt;}
+thead tr{border-bottom:2px solid #111;}
+th{padding:6px 8px;text-align:left;font-weight:600;font-size:9pt;letter-spacing:.3px;text-transform:uppercase;color:#333;}
+th.c,td.c{text-align:center;}
+tr.e{background:#f8f9fc;}tr.o{background:#fff;}
+td{padding:7px 8px;vertical-align:middle;border-bottom:1px solid #eaecf0;}
+td.en{font-weight:500;}td.c{color:#444;}td.lc{width:90px;border-bottom:1px solid #bbb;}
+td.gh{background:#f0f4ff;font-size:8.5pt;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:#1a56db;padding:5px 8px!important;border-top:1px solid #d0d8f0;}
+th.lch{text-align:center;font-size:8pt;color:#aaa;}
+.addons{display:flex;gap:14px;flex-wrap:wrap;margin-top:18px;}
+.abox{flex:1;min-width:160px;border:1.5px solid #dde2ed;border-radius:8px;padding:10px 12px;}
+.atitle{font-size:8pt;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:#888;margin-bottom:5px;}
+.aval{font-size:10.5pt;font-weight:600;color:#111;}
+.asub{font-size:9pt;color:#666;margin-top:2px;}
+.nbox{margin-top:18px;padding:10px 12px;border:1.5px solid #dde2ed;border-radius:8px;background:#fafbff;}
+.nlabel{font-size:8pt;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:#888;margin-bottom:5px;}
+.ntext{font-size:10pt;color:#333;line-height:1.5;}
+.footer{margin-top:22px;padding-top:10px;border-top:1px solid #dde2ed;display:flex;justify-content:space-between;font-size:8.5pt;color:#aaa;}
+</style></head><body>
+
+<div class="pbar no-print">
+  <p>To save as PDF: click <b>Print / Save as PDF</b> → set destination to <b>Save as PDF</b> → save &amp; share.</p>
+  <button class="pbtn" onclick="window.print()">🖨 Print / Save as PDF</button>
+</div>
+<div class="wrap">
+<div class="hdr">
+  <div><div class="title">${esc(item.primaryGroup)} Day</div><div class="sub">${esc(dayLabel||item.date)}</div></div>
+  <div style="text-align:right"><div class="badge badge-${esc(item.intensity||'manual')}">${esc(item.intensityLabel)}</div><div class="meta">Athlete: <b>${esc(item.userName)}</b></div></div>
+</div>
+${item.primary.length?`<div class="slabel">Primary Lifts</div>
+<table><thead><tr><th>Exercise</th><th class="c">Sets</th><th class="c">Reps</th><th class="c">Rest</th><th class="lch">Weight / Notes</th></tr></thead>
+<tbody>${primaryRows}</tbody></table>`:""}
+${item.aux.length?`<div class="slabel">Auxiliary Work</div>
+<table><thead><tr><th>Exercise</th><th class="c">Sets</th><th class="c">Reps</th><th class="c">Rest</th><th class="lch">Weight / Notes</th></tr></thead>
+<tbody>${auxRows}</tbody></table>`:""}
+${(hasAbs||hasCardio)?`<div class="addons">
+${hasAbs?`<div class="abox"><div class="atitle">Extra Abs</div><div class="aval">${esc(item.extraAbs.exercise)}</div><div class="asub">${esc(item.extraAbs.sets)} sets × ${esc(item.extraAbs.reps)} reps · rest 45s</div></div>`:""}
+${hasCardio?`<div class="abox"><div class="atitle">Cardio</div><div class="aval">${esc(item.cardio.type)}</div><div class="asub">${esc(item.cardio.minutes)} min · ${esc(item.cardio.intensity)}</div></div>`:""}
+</div>`:""}
+${item.notes?`<div class="nbox"><div class="nlabel">Notes</div><div class="ntext">${esc(item.notes)}</div></div>`:""}
+<div class="footer"><span>Workout Builder</span><span>${esc(item.date)}</span></div>
+</div></body></html>`;
+  }
+
+function openPdfPreview(item){
+const old=document.getElementById(“pdfModal”);if(old)old.remove();
+
+```
+const esc=s=>(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+const dayNames=["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+let dayLabel="";
+if(item.date&&item.date.length===10){
+  const p=item.date.split("-");
+  const d=new Date(Number(p[0]),Number(p[1])-1,Number(p[2]));
+  dayLabel=`${dayNames[d.getDay()]}, ${d.toLocaleDateString("en-US",{month:"long",day:"numeric",year:"numeric"})}`;
+}
+
+// Build exercise rows as DOM strings
+const primaryRows=item.primary.map((ex,i)=>`
+  <tr style="background:${i%2===0?'#f8f9fc':'#fff'}">
+    <td style="padding:8px 10px;font-weight:500;font-size:11pt;">${esc(ex.exercise)}</td>
+    <td style="padding:8px 6px;text-align:center;font-size:11pt;">${esc(ex.sets)}</td>
+    <td style="padding:8px 6px;text-align:center;font-size:11pt;">${esc(ex.reps)}</td>
+    <td style="padding:8px 6px;text-align:center;font-size:11pt;color:#666;">${fmtRest(ex.restSec)}</td>
+    <td style="padding:8px 6px;width:90px;border-bottom:1px solid #ccc;"></td>
+  </tr>`).join("");
+
+const auxByGroup={};
+item.aux.forEach(ex=>{const g=ex.group||"Other";if(!auxByGroup[g])auxByGroup[g]=[];auxByGroup[g].push(ex);});
+let auxRows="";let ai=0;
+Object.entries(auxByGroup).forEach(([group,exList])=>{
+  auxRows+=`<tr><td colspan="5" style="background:#f0f4ff;padding:6px 10px;font-size:9pt;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:#1a56db;border-top:1px solid #d0d8f0;">${esc(group)}</td></tr>`;
+  exList.forEach(ex=>{
+    auxRows+=`<tr style="background:${ai%2===0?'#f8f9fc':'#fff'}">
+      <td style="padding:8px 10px;font-weight:500;font-size:11pt;">${esc(ex.exercise)}</td>
+      <td style="padding:8px 6px;text-align:center;font-size:11pt;">${esc(ex.sets)}</td>
+      <td style="padding:8px 6px;text-align:center;font-size:11pt;">${esc(ex.reps)}</td>
+      <td style="padding:8px 6px;text-align:center;font-size:11pt;color:#666;">${fmtRest(ex.restSec)}</td>
+      <td style="padding:8px 6px;width:90px;border-bottom:1px solid #ccc;"></td>
+    </tr>`;ai++;
   });
+});
 
-  // Random workout (based on selected primary group)
-  function sampleUnique(arr, n){
-    const a = (arr || []).slice();
-    for (let i=a.length-1; i>0; i--){
-      const j = Math.floor(Math.random() * (i+1));
-      [a[i], a[j]] = [a[j], a[i]];
-    }
-    return a.slice(0, Math.min(n, a.length));
-  }
+const hasAbs=item.extraAbs&&item.extraAbs.exercise;
+const hasCardio=item.cardio&&item.cardio.type;
+const badgeColors={manual:"#eee|#444",light:"#e6fdf4|#0d7a55",moderate:"#e8f0ff|#1a56db",intense:"#fff0f0|#c0392b"};
+const [bgC,txtC]=(badgeColors[item.intensity]||"#eee|#444").split("|");
 
-  function buildRandomWorkout(){
-    // Moderate structure
-    const plan = { pCount: 2, aCount: 3, pSets: 3, pReps: 10, pRest: 150, aSets: 3, aReps: 12, aRest: 90 };
+// Build the overlay directly in the page DOM (works on all browsers including iOS Safari)
+const overlay=document.createElement("div");
+overlay.id="pdfModal";
+overlay.style.cssText="position:fixed;inset:0;z-index:9999;background:#0f0f0f;overflow-y:auto;-webkit-overflow-scrolling:touch;";
 
-    $("intensity").value = "manual";
-    $("primaryContainer").innerHTML = "";
-    $("auxContainer").innerHTML = "";
+// Intensity colors for the card
+const intensityColor={manual:"#888",light:"#3ecf6e",moderate:"#4a9eff",intense:"#ff5a1f"}[item.intensity||"manual"]||"#888";
 
-    const primaryGroup = $("primaryGroup").value;
-    const primList = primaryGroups[primaryGroup] ?? [];
+// Build primary list
+const primaryList = item.primary.map(ex=>
+  `<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.07);">
+    <span style="font-size:15px;font-weight:600;color:#f0ede8;">${esc(ex.exercise)||"—"}</span>
+    <span style="font-size:13px;color:#ff5a1f;font-weight:700;white-space:nowrap;margin-left:12px;">${esc(ex.sets)}×${esc(ex.reps)}${ex.restSec?` <span style="color:#666;font-weight:500;">· ${fmtRest(ex.restSec)}</span>`:""}</span>
+  </div>`
+).join("");
 
-    const sampleUnique = (arr, n) => {
-      const a = (arr || []).slice();
-      for (let i=a.length-1; i>0; i--){
-        const j = Math.floor(Math.random() * (i+1));
-        [a[i], a[j]] = [a[j], a[i]];
-      }
-      return a.slice(0, Math.min(n, a.length));
-    };
+// Build aux list grouped
+const auxByGrp={};
+item.aux.forEach(ex=>{const g=ex.group||"Other";if(!auxByGrp[g])auxByGrp[g]=[];auxByGrp[g].push(ex);});
+const auxList = Object.entries(auxByGrp).map(([grp,exList])=>
+  `<div style="margin-top:10px;">
+    <div style="font-size:10px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:#ff5a1f;margin-bottom:4px;">${esc(grp)}</div>
+    ${exList.map(ex=>`
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.05);">
+        <span style="font-size:14px;color:#c0bdb8;">${esc(ex.exercise)||"—"}</span>
+        <span style="font-size:12px;color:#8a8580;font-weight:600;white-space:nowrap;margin-left:12px;">${esc(ex.sets)}×${esc(ex.reps)}</span>
+      </div>`).join("")}
+  </div>`
+).join("");
 
-    const presetKey = $("dayPreset")?.value || "custom";
-    const preset = dayPresets[presetKey] || dayPresets.custom;
+// Stats bar
+const totalSets = [...item.primary,...item.aux].reduce((s,e)=>s+Number(e.sets||0),0);
+const totalExercises = item.primary.length + item.aux.length;
 
-    const auxPlanByPrimary = {
-      "Chest": ["Triceps", "Shoulders", "Chest"],
-      "Back": ["Biceps", "Rear Delts", "Upper Back / Traps"],
-      "Legs": ["Quads", "Hamstrings", "Calves"],
-      "Shoulders": ["Rear Delts", "Triceps", "Upper Back / Traps"],
-      "Arms": ["Biceps", "Triceps", "Forearms"]
-    };
+overlay.innerHTML=`
+  <!-- Top bar -->
+  <div style="position:sticky;top:0;z-index:10;background:rgba(15,15,15,.95);backdrop-filter:blur(12px);padding:12px 16px;display:flex;align-items:center;gap:8px;border-bottom:1px solid rgba(255,255,255,.08);">
+    <span style="flex:1;font-family:system-ui,sans-serif;font-size:12px;color:#666;">Screenshot to share · tap Share/Send once on Netlify</span>
+    <button id="pdfDownloadBtn" style="cursor:pointer;background:#ff5a1f;border:none;color:#fff;padding:10px 18px;border-radius:8px;font:700 13px/1 system-ui,sans-serif;flex-shrink:0;">⬆ Share</button>
+    <button onclick="document.getElementById('pdfModal').remove()" style="cursor:pointer;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);color:#fff;padding:10px 14px;border-radius:8px;font:600 13px/1 system-ui,sans-serif;flex-shrink:0;">✕</button>
+  </div>
 
-    const baseAuxOrder = (preset.auxOrder && preset.auxOrder.length) ? preset.auxOrder : (auxPlanByPrimary[primaryGroup] || Object.keys(auxGroups));
-    const auxOrder = baseAuxOrder.slice();
+  <!-- Share card — this is what gets screenshotted -->
+  <div id="shareCard" style="max-width:480px;margin:20px auto;border-radius:20px;overflow:hidden;background:#141414;border:1px solid rgba(255,255,255,.08);font-family:system-ui,sans-serif;box-shadow:0 32px 80px rgba(0,0,0,.8);">
 
-    const primPick = sampleUnique(primList, plan.pCount);
-    for (let i=0; i<plan.pCount; i++){
-      addPrimaryRow({ setsValue: plan.pSets, repsValue: plan.pReps, restValue: plan.pRest, exerciseValue: primPick[i] || "" });
-    }
+    <!-- Card header with orange accent bar -->
+    <div style="background:linear-gradient(135deg,#1a1a1a,#111);padding:24px 22px 20px;border-bottom:1px solid rgba(255,255,255,.07);position:relative;overflow:hidden;">
+      <!-- Decorative bg circle -->
+      <div style="position:absolute;right:-30px;top:-30px;width:140px;height:140px;border-radius:50%;background:${intensityColor};opacity:.06;"></div>
+      <div style="position:absolute;right:20px;top:20px;width:60px;height:60px;border-radius:50%;background:${intensityColor};opacity:.1;"></div>
 
-    for (let i=0; i<plan.aCount; i++){
-      const g = auxOrder[i % auxOrder.length];
-      const exList = auxGroups[g] ?? [];
-      const ex = sampleUnique(exList, 1)[0] || "";
-      addAuxRow({ groupValue: g, exerciseValue: ex, setsValue: plan.aSets, repsValue: plan.aReps, restValue: plan.aRest });
-    }
+      <!-- Brand -->
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;">
+        <div style="width:28px;height:28px;border-radius:7px;background:linear-gradient(135deg,#ff5a1f,#c0390a);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:900;color:#fff;">GP</div>
+        <span style="font-size:11px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:#666;">Good Pump</span>
+      </div>
 
-    // Always add an Abs row as an extra aux workout
-    const absList = auxGroups["Abs"] ?? [];
-    const absEx = sampleUnique(absList, 1)[0] || "";
-    addAuxRow({ groupValue: "Abs", exerciseValue: absEx, setsValue: 4, repsValue: 20, restValue: 45 });
+      <!-- Workout name -->
+      <div style="font-size:32px;font-weight:900;color:#f0ede8;letter-spacing:-.5px;line-height:1;text-transform:uppercase;">${esc(item.primaryGroup)}</div>
+      <div style="font-size:13px;color:#666;margin-top:6px;">${esc(dayLabel||item.date)}</div>
 
-    // Auto-populate add-ons
-    autoFillAbsAndCardio(primaryGroup);
+      <!-- Stats row -->
+      <div style="display:flex;gap:16px;margin-top:18px;">
+        <div style="text-align:center;">
+          <div style="font-size:24px;font-weight:900;color:${intensityColor};line-height:1;">${totalSets}</div>
+          <div style="font-size:10px;color:#555;font-weight:600;letter-spacing:.5px;text-transform:uppercase;margin-top:2px;">Sets</div>
+        </div>
+        <div style="width:1px;background:rgba(255,255,255,.08);"></div>
+        <div style="text-align:center;">
+          <div style="font-size:24px;font-weight:900;color:${intensityColor};line-height:1;">${totalExercises}</div>
+          <div style="font-size:10px;color:#555;font-weight:600;letter-spacing:.5px;text-transform:uppercase;margin-top:2px;">Exercises</div>
+        </div>
+        <div style="width:1px;background:rgba(255,255,255,.08);"></div>
+        <div style="text-align:center;">
+          <div style="font-size:24px;font-weight:900;color:${intensityColor};line-height:1;text-transform:uppercase;">${esc(item.intensityLabel||"—")}</div>
+          <div style="font-size:10px;color:#555;font-weight:600;letter-spacing:.5px;text-transform:uppercase;margin-top:2px;">Intensity</div>
+        </div>
+        <div style="flex:1;"></div>
+        <div style="text-align:right;">
+          <div style="font-size:15px;font-weight:700;color:#f0ede8;line-height:1;">${esc(item.userName)}</div>
+          <div style="font-size:10px;color:#555;font-weight:600;letter-spacing:.5px;text-transform:uppercase;margin-top:2px;">Athlete</div>
+        </div>
+      </div>
+    </div>
 
-    updateCounts();
-    toast("Random workout created");
-  }
+    <!-- Primary exercises -->
+    ${item.primary.length?`
+    <div style="padding:18px 22px 0;">
+      <div style="font-size:10px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:#444;margin-bottom:2px;">Primary Lifts</div>
+      ${primaryList}
+    </div>`:""}
 
-  $("randomWorkoutBtn").addEventListener("click", () => buildRandomWorkout());
+    <!-- Aux exercises -->
+    ${item.aux.length?`
+    <div style="padding:14px 22px 0;">
+      <div style="font-size:10px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:#444;margin-bottom:2px;">Auxiliary</div>
+      ${auxList}
+    </div>`:""}
 
-  // ----------------------------
-  // Rest timer (tap-to-start) - safe/event delegation
-  // ----------------------------
-  let restTimerInterval = null;
-  let restRemaining = 0;
-  let restPaused = false;
+    <!-- Extras row -->
+    ${(item.extraAbs?.exercise||item.cardio?.type)?`
+    <div style="display:flex;gap:10px;padding:14px 22px 0;flex-wrap:wrap;">
+      ${item.extraAbs?.exercise?`<div style="flex:1;min-width:120px;background:rgba(255,255,255,.04);border-radius:10px;padding:10px 12px;">
+        <div style="font-size:9px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:#555;margin-bottom:3px;">Abs</div>
+        <div style="font-size:13px;font-weight:600;color:#c0bdb8;">${esc(item.extraAbs.exercise)}</div>
+        <div style="font-size:11px;color:#666;margin-top:2px;">${esc(item.extraAbs.sets)}×${esc(item.extraAbs.reps)}</div>
+      </div>`:""}
+      ${item.cardio?.type?`<div style="flex:1;min-width:120px;background:rgba(255,255,255,.04);border-radius:10px;padding:10px 12px;">
+        <div style="font-size:9px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:#555;margin-bottom:3px;">Cardio</div>
+        <div style="font-size:13px;font-weight:600;color:#c0bdb8;">${esc(item.cardio.type)}</div>
+        <div style="font-size:11px;color:#666;margin-top:2px;">${esc(item.cardio.minutes)} min · ${esc(item.cardio.intensity)}</div>
+      </div>`:""}
+    </div>`:""}
 
-  function fmtMMSS(sec){
-    sec = Math.max(0, Math.floor(sec));
-    const m = String(Math.floor(sec/60)).padStart(2,"0");
-    const s = String(sec%60).padStart(2,"0");
-    return `${m}:${s}`;
-  }
+    <!-- Notes -->
+    ${item.notes?`
+    <div style="margin:14px 22px 0;background:rgba(255,90,31,.06);border:1px solid rgba(255,90,31,.15);border-radius:10px;padding:10px 12px;">
+      <div style="font-size:9px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:#ff5a1f;margin-bottom:4px;">Notes</div>
+      <div style="font-size:13px;color:#8a8580;line-height:1.5;">${esc(item.notes)}</div>
+    </div>`:""}
 
-  function showRestTimer(show){
-    const box = $("restTimer");
-    if (box) box.style.display = show ? "block" : "none";
-  }
+    <!-- Card footer -->
+    <div style="padding:16px 22px 20px;margin-top:14px;display:flex;align-items:center;justify-content:space-between;">
+      <div style="display:flex;align-items:center;gap:6px;">
+        <div style="width:4px;height:4px;border-radius:50%;background:#ff5a1f;"></div>
+        <span style="font-size:11px;color:#444;font-weight:600;letter-spacing:.5px;">GOOD PUMP</span>
+      </div>
+      <span style="font-size:11px;color:#333;">${esc(item.date)}</span>
+    </div>
+  </div>
 
-  function updateRestTimerUI(){
-    const lab = $("restTimerLabel");
-    if (lab) lab.textContent = `Rest: ${fmtMMSS(restRemaining)}`;
-  }
+  <div style="text-align:center;padding:16px;font-family:system-ui,sans-serif;font-size:12px;color:#333;">Screenshot the card above to share with your gym partner 💪</div>
+`;
 
-  function restBeep(){
-    try{
-      const Ctx = window.AudioContext || window.webkitAudioContext;
-      if (!Ctx) return;
-      const ctx = new Ctx();
-      const o = ctx.createOscillator();
-      const g = ctx.createGain();
-      o.type = "sine";
-      o.frequency.value = 880;
-      g.gain.value = 0.08;
-      o.connect(g); g.connect(ctx.destination);
-      o.start();
-      setTimeout(()=>{ o.stop(); ctx.close && ctx.close(); }, 180);
-    }catch(e){}
-  }
+document.body.appendChild(overlay);
+overlay.scrollTop=0;
 
-  function startRestTimer(seconds){
-    restRemaining = parseInt(seconds || "0", 10) || 0;
-    if (!restRemaining){ toast("No rest selected"); return; }
-    restPaused = false;
-    const pauseBtn = $("restTimerPauseBtn");
-    if (pauseBtn) pauseBtn.textContent = "Pause";
-    showRestTimer(true);
-    updateRestTimerUI();
+// Wire share button
+const dlBtn = document.getElementById("pdfDownloadBtn");
+if (dlBtn) {
+  dlBtn.addEventListener("click", async () => {
+    const fullHtml = generatePdfHtml(item);
+    const safeName = (item.date||"workout").replace(/[^0-9-]/g,"");
+    const fileName = `workout-${safeName}-${(item.userName||"log").replace(/[^a-zA-Z0-9]/g,"-").toLowerCase()}.html`;
 
-    if (restTimerInterval) clearInterval(restTimerInterval);
-    let lastTick = Date.now();
-
-    restTimerInterval = setInterval(() => {
-      if (restPaused) { lastTick = Date.now(); return; }
-      const now = Date.now();
-      const dt = Math.round((now - lastTick)/1000);
-      if (dt > 0){
-        restRemaining -= dt;
-        lastTick = now;
-        if (restRemaining <= 0){
-          restRemaining = 0;
-          updateRestTimerUI();
-          clearInterval(restTimerInterval);
-          restTimerInterval = null;
-          restBeep();
-          if (navigator.vibrate) try{ navigator.vibrate([120,80,120]); }catch(e){}
-          toast("Rest done");
+    // Try native share sheet (works on iOS Safari, Android Chrome)
+    if (navigator.share) {
+      try {
+        const file = new File([fullHtml], fileName, {type: "text/html"});
+        if (navigator.canShare && navigator.canShare({files:[file]})) {
+          await navigator.share({
+            title: `${item.primaryGroup} Workout — ${item.date}`,
+            text: `Check out my ${item.primaryGroup} workout on ${item.date}!`,
+            files: [file]
+          });
+          toast("Shared!");
           return;
         }
-        updateRestTimerUI();
+        // Share without file (just text + title)
+        await navigator.share({
+          title: `${item.primaryGroup} Workout — ${item.date}`,
+          text: `My ${item.primaryGroup} workout on ${item.date} — ${item.primary.map(e=>e.exercise).join(", ")}`
+        });
+        toast("Shared!");
+        return;
+      } catch(e) {
+        if (e.name === "AbortError") return; // user cancelled, do nothing
       }
-    }, 250);
-  }
+    }
 
-  function stopRestTimer(){
-    if (restTimerInterval) clearInterval(restTimerInterval);
-    restTimerInterval = null;
-    restRemaining = 0;
-    restPaused = false;
-    showRestTimer(false);
-  }
-
-  // Timer buttons
-  const stopBtn = $("restTimerStopBtn");
-  if (stopBtn) stopBtn.addEventListener("click", () => stopRestTimer());
-
-  const pauseBtn = $("restTimerPauseBtn");
-  if (pauseBtn) pauseBtn.addEventListener("click", () => {
-    restPaused = !restPaused;
-    pauseBtn.textContent = restPaused ? "Resume" : "Pause";
-  });
-
-  // Event delegation: any rest dropdown change/click starts timer
-  document.addEventListener("change", (e) => {
-    const t = e.target;
-    if (t && t.classList && t.classList.contains("restSel")){
-      startRestTimer(t.value);
+    // Fallback: copy workout summary to clipboard
+    try {
+      const lines = [`${item.primaryGroup} Day — ${item.date}`, `Athlete: ${item.userName}`, ""];
+      item.primary.forEach(e => lines.push(`• ${e.exercise} ${e.sets}×${e.reps} (rest ${fmtRest(e.restSec)})`));
+      if (item.aux.length) { lines.push(""); item.aux.forEach(e => lines.push(`• ${e.group}: ${e.exercise} ${e.sets}×${e.reps}`)); }
+      if (item.notes) { lines.push(""); lines.push(`Notes: ${item.notes}`); }
+      await navigator.clipboard.writeText(lines.join("\n"));
+      toast("Copied to clipboard — paste into Messages!");
+    } catch(e) {
+      toast("Use the browser Share button to send this workout.");
     }
   });
-  document.addEventListener("click", (e) => {
-    const t = e.target;
-    if (t && t.classList && t.classList.contains("restSel")){
-      if (t.value) startRestTimer(t.value);
-    }
-  });
+}
+```
 
-  // ----------------------------
-  // Day presets + Abs/Cardio add-ons
-  // ----------------------------
-  const dayPresets = {
-    custom: { primary: null, auxOrder: [] },
-    chest_tris: { primary: "Chest", auxOrder: ["Triceps", "Chest", "Shoulders"] },
-    back_bis: { primary: "Back", auxOrder: ["Biceps", "Rear Delts", "Upper Back / Traps"] },
-    legs_calves: { primary: "Legs", auxOrder: ["Calves", "Hamstrings", "Quads"] },
-    shoulders_abs: { primary: "Shoulders", auxOrder: ["Rear Delts", "Triceps", "Upper Back / Traps"] },
-    arms: { primary: "Arms", auxOrder: ["Biceps", "Triceps", "Forearms"] }
-  };
+}
 
-  function fillNumSelect(sel, from, to, defVal){
-    if (!sel) return;
-    sel.innerHTML = "";
-    for (let i=from; i<=to; i++){
-      const o = document.createElement("option");
-      o.value = String(i);
-      o.textContent = String(i);
-      sel.appendChild(o);
-    }
-    sel.value = String(defVal);
+$(“sharePdfBtn”).addEventListener(“click”,()=>{
+const primary=readRows($(“primaryContainer”),“primary”);
+if(!primary.length){toast(“Add at least 1 primary exercise first”);return;}
+openPdfPreview(buildWorkoutDataFromForm());
+toast(“Workout preview ready — Ctrl+P to save as PDF”);
+trackEvent(‘pdf_shared’, { primary_group: buildWorkoutDataFromForm().primaryGroup });
+});
+
+// ─────────────────────────────────────────
+// Tab switching
+// ─────────────────────────────────────────
+function switchTab(name){
+[“Log”,“Volume”].forEach(t => {
+$(`tabBtn${t}`).classList.toggle(“active”, t === name);
+$(`tabPane${t}`).classList.toggle(“active”, t === name);
+});
+if (name === “Volume”) renderVolumePanel();
+}
+
+$(“tabBtnLog”).addEventListener(“click”, () => switchTab(“Log”));
+$(“tabBtnVolume”).addEventListener(“click”, () => switchTab(“Volume”));
+
+// Week nav
+$(“volPrevWeek”).addEventListener(“click”, () => { volWeekOffset–; renderVolumePanel(); });
+$(“volNextWeek”).addEventListener(“click”, () => { if(volWeekOffset<0){ volWeekOffset++; renderVolumePanel(); } });
+
+// Volume user filter
+$(“volUserFilter”).addEventListener(“change”, () => renderVolumePanel());
+$(“volShowAllBtn”).addEventListener(“click”, () => { $(“volUserFilter”).value=”**all**”; renderVolumePanel(); });
+
+// ─────────────────────────────────────────
+// Events — builder
+// ─────────────────────────────────────────
+$(“addPrimaryBtn”).addEventListener(“click”, () => addPrimaryRow());
+$(“addAuxBtn”).addEventListener(“click”, () => addAuxRow());
+
+$(“primaryGroup”).addEventListener(“change”, () => {
+const g = $(“primaryGroup”).value;
+const list = primaryGroups[g] ?? [];
+Array.from($(“primaryContainer”).children).forEach(row => {
+const exSel = row.querySelector(”.exerciseSel”); if (!exSel) return;
+const prev = exSel.value;
+exSel.innerHTML = “”;
+exSel.appendChild(makeOption(””, “— Select exercise —”));
+sortWithFavs(list, getFavArr(“primary”, g)).forEach(ex => { const o=makeOption(ex); if(isFav(“primary”,g,ex)) o.textContent=“★ “+ex; exSel.appendChild(o); });
+exSel.appendChild(makeOption(”**other**”, “✏ Other (type below)”));
+exSel.value = list.includes(prev) ? prev : “”;
+const txt = row.querySelector(”.exerciseInput”);
+if (txt) txt.style.display = exSel.value === “**other**” ? “block” : “none”;
+});
+});
+
+$(“intensity”).addEventListener(“change”, (e) => { applyTemplate(e.target.value); updateCounts(); });
+
+$(“resetBtn”).addEventListener(“click”, () => {
+$(“intensity”).value = “manual”; $(“notes”).value = “”;
+$(“primaryContainer”).innerHTML = “”; $(“auxContainer”).innerHTML = “”;
+addPrimaryRow(); updateCounts(); toast(“Reset”);
+});
+
+$(“saveBtn”).addEventListener(“click”, () => {
+const date = $(“workoutDate”).value;
+if (!date){ toast(“Pick a date first”); return; }
+const primary = readRows($(“primaryContainer”), “primary”);
+if (!primary.length){ toast(“Add at least 1 primary exercise”); return; }
+const aux = readRows($(“auxContainer”), “aux”);
+
+```
+const intensityVal = $("intensity").value;
+const intensityLabel = {manual:"Manual",light:"Light",moderate:"Moderate",intense:"Intense"}[intensityVal]||"Manual";
+
+const item = {
+  id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now())+"_"+Math.random().toString(16).slice(2),
+  date,
+  primaryGroup: $("primaryGroup").value,
+  intensity: intensityVal,
+  intensityLabel,
+  notes: ($("notes").value||"").trim(),
+  extraAbs: {
+    exercise: ($("extraAbsExercise")?.value||"").trim(),
+    sets: $("extraAbsSets")?.value||"",
+    reps: $("extraAbsReps")?.value||""
+  },
+  cardio: {
+    type: $("cardioType")?.value||"",
+    minutes: $("cardioMinutes")?.value||"",
+    intensity: $("cardioIntensity")?.value||""
+  },
+  userName: ($("userName").value||"").trim()||"Default",
+  primary,
+  aux,
+  createdAt: new Date().toISOString()
+};
+
+const items = loadLog();
+items.push(item);
+try{ localStorage.setItem(USER_DEFAULT_KEY, item.userName); }catch(e){}
+saveLog(items);
+renderLog();
+renderVolumePanel();
+toast("Saved to log");
+trackEvent('workout_saved', {
+  primary_group: item.primaryGroup,
+  intensity: item.intensity,
+  primary_count: item.primary.length,
+  aux_count: item.aux.length
+});
+```
+
+});
+
+$(“clearBtn”).addEventListener(“click”, () => {
+if (!confirm(“Clear ALL saved workouts from this browser?”)) return;
+localStorage.removeItem(STORAGE_KEY);
+renderLog(); renderVolumePanel(); toast(“Cleared”);
+});
+
+$(“exportBtn”).addEventListener(“click”, () => {
+$(“exportText”).value = JSON.stringify(loadLog(), null, 2);
+$(“exportBox”).style.display = “block”; toast(“Export ready”);
+});
+$(“hideExportBtn”).addEventListener(“click”, () => { $(“exportBox”).style.display = “none”; });
+$(“copyExportBtn”).addEventListener(“click”, async () => {
+try{ await navigator.clipboard.writeText($(“exportText”).value||””); toast(“Copied”); }
+catch(e){ toast(“Copy blocked (browser permission)”); }
+});
+
+$(“logUserFilter”).addEventListener(“change”, () => { renderLog(); toast(“Filtered”); });
+$(“clearUserFilterBtn”).addEventListener(“click”, () => { $(“logUserFilter”).value=”**all**”; renderLog(); toast(“All users”); });
+
+// Favorites toggle
+$(“toggleFavsBtn”).addEventListener(“click”, () => {
+showFavsOnly = !showFavsOnly;
+$(“toggleFavsBtn”).textContent = showFavsOnly ? “⭐ Favorites (only)” : “⭐ Favorites”;
+const rebuildExSel = (exSel, list, kind, g) => {
+const prev = exSel.value;
+exSel.innerHTML = “”;
+exSel.appendChild(makeOption(””, “— Select exercise —”));
+sortWithFavs(list, getFavArr(kind, g)).forEach(ex => { const o=makeOption(ex); if(isFav(kind,g,ex)) o.textContent=“★ “+ex; exSel.appendChild(o); });
+exSel.appendChild(makeOption(”**other**”, “✏ Other (type below)”));
+if (list.includes(prev) || prev === “**other**”) exSel.value = prev;
+};
+Array.from($(“primaryContainer”).children).forEach(row => {
+const exSel = row.querySelector(”.exerciseSel”); if (!exSel) return;
+rebuildExSel(exSel, primaryGroups[$(“primaryGroup”).value]??[], “primary”, $(“primaryGroup”).value);
+});
+Array.from($(“auxContainer”).children).forEach(row => {
+const exSel = row.querySelector(”.exerciseSel”);
+const gSel = row.querySelector(”.auxGroupSel”);
+if (!exSel || !gSel) return;
+rebuildExSel(exSel, auxGroups[gSel.value]??[], “aux”, gSel.value);
+});
+toast(showFavsOnly?“Favorites only”:“Favorites + all”);
+});
+
+// Random workout
+const dayPresets = {
+custom: { primary: null, auxOrder: [] },
+chest_tris: { primary: “Chest”, auxOrder: [“Triceps”,“Chest”,“Shoulders”] },
+back_bis: { primary: “Back”, auxOrder: [“Biceps”,“Rear Delts”,“Upper Back / Traps”] },
+legs_calves: { primary: “Legs”, auxOrder: [“Calves”,“Hamstrings”,“Quads”] },
+shoulders_abs: { primary: “Shoulders”, auxOrder: [“Rear Delts”,“Triceps”,“Upper Back / Traps”] },
+arms: { primary: “Arms”, auxOrder: [“Biceps”,“Triceps”,“Forearms”] }
+};
+
+function sampleUnique(arr, n){
+const a=(arr||[]).slice();
+for(let i=a.length-1;i>0;i–){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; }
+return a.slice(0,Math.min(n,a.length));
+}
+
+function buildRandomWorkout(){
+const plan={pCount:2,aCount:3,pSets:3,pReps:10,pRest:150,aSets:3,aReps:12,aRest:90};
+$(“intensity”).value=“manual”;
+$(“primaryContainer”).innerHTML=””; $(“auxContainer”).innerHTML=””;
+const primaryGroup=$(“primaryGroup”).value;
+const primList=primaryGroups[primaryGroup]??[];
+const presetKey=$(“dayPreset”)?.value||“custom”;
+const preset=dayPresets[presetKey]||dayPresets.custom;
+const auxPlanByPrimary={“Chest”:[“Triceps”,“Shoulders”,“Chest”],“Back”:[“Biceps”,“Rear Delts”,“Upper Back / Traps”],“Legs”:[“Quads”,“Hamstrings”,“Calves”],“Shoulders”:[“Rear Delts”,“Triceps”,“Upper Back / Traps”],“Arms”:[“Biceps”,“Triceps”,“Forearms”]};
+const baseAuxOrder=(preset.auxOrder&&preset.auxOrder.length)?preset.auxOrder:(auxPlanByPrimary[primaryGroup]||Object.keys(auxGroups));
+const primPick=sampleUnique(primList,plan.pCount);
+for(let i=0;i<plan.pCount;i++) addPrimaryRow({setsValue:plan.pSets,repsValue:plan.pReps,restValue:plan.pRest,exerciseValue:primPick[i]||””});
+for(let i=0;i<plan.aCount;i++){
+const g=baseAuxOrder[i%baseAuxOrder.length];
+const exList=auxGroups[g]??[];
+addAuxRow({groupValue:g,exerciseValue:sampleUnique(exList,1)[0]||””,setsValue:plan.aSets,repsValue:plan.aReps,restValue:plan.aRest});
+}
+const absList=auxGroups[“Abs”]??[];
+addAuxRow({groupValue:“Abs”,exerciseValue:sampleUnique(absList,1)[0]||””,setsValue:4,repsValue:20,restValue:45});
+autoFillAbsAndCardio(primaryGroup);
+updateCounts();
+toast(“Random workout created”);
+trackEvent(‘random_workout’, { primary_group: $(“primaryGroup”).value });
+}
+
+$(“randomWorkoutBtn”).addEventListener(“click”, () => buildRandomWorkout());
+
+// ─────────────────────────────────────────
+// Rest timer
+// ─────────────────────────────────────────
+let restTimerInterval=null, restRemaining=0, restPaused=false;
+
+function fmtMMSS(sec){ sec=Math.max(0,Math.floor(sec)); return `${String(Math.floor(sec/60)).padStart(2,"0")}:${String(sec%60).padStart(2,"0")}`; }
+function showRestTimer(show){ const box=$(“restTimer”); if(box)box.style.display=show?“block”:“none”; }
+function updateRestTimerUI(){ const lab=$(“restTimerLabel”); if(lab)lab.textContent=`Rest: ${fmtMMSS(restRemaining)}`; }
+
+function restBeep(){
+try{
+const Ctx=window.AudioContext||window.webkitAudioContext; if(!Ctx)return;
+const ctx=new Ctx(); const o=ctx.createOscillator(); const g=ctx.createGain();
+o.type=“sine”; o.frequency.value=880; g.gain.value=0.08;
+o.connect(g); g.connect(ctx.destination); o.start();
+setTimeout(()=>{o.stop();ctx.close&&ctx.close();},180);
+}catch(e){}
+}
+
+function startRestTimer(seconds){
+restRemaining=parseInt(seconds||“0”,10)||0;
+if(!restRemaining){toast(“No rest selected”);return;}
+restPaused=false;
+const pauseBtn=$(“restTimerPauseBtn”); if(pauseBtn)pauseBtn.textContent=“Pause”;
+showRestTimer(true); updateRestTimerUI();
+if(restTimerInterval)clearInterval(restTimerInterval);
+let lastTick=Date.now();
+restTimerInterval=setInterval(()=>{
+if(restPaused){lastTick=Date.now();return;}
+const now=Date.now(); const dt=Math.round((now-lastTick)/1000);
+if(dt>0){ restRemaining-=dt; lastTick=now;
+if(restRemaining<=0){ restRemaining=0; updateRestTimerUI(); clearInterval(restTimerInterval); restTimerInterval=null; restBeep(); if(navigator.vibrate)try{navigator.vibrate([120,80,120]);}catch(e){} toast(“Rest done”); return; }
+updateRestTimerUI();
+}
+},250);
+}
+
+function stopRestTimer(){ if(restTimerInterval)clearInterval(restTimerInterval); restTimerInterval=null; restRemaining=0; restPaused=false; showRestTimer(false); }
+
+const stopBtn=$(“restTimerStopBtn”); if(stopBtn)stopBtn.addEventListener(“click”,()=>stopRestTimer());
+const pauseBtn=$(“restTimerPauseBtn”); if(pauseBtn)pauseBtn.addEventListener(“click”,()=>{ restPaused=!restPaused; pauseBtn.textContent=restPaused?“Resume”:“Pause”; });
+
+document.addEventListener(“change”,(e)=>{ const t=e.target; if(t&&t.classList&&t.classList.contains(“restSel”)) startRestTimer(t.value); });
+document.addEventListener(“click”,(e)=>{ const t=e.target; if(t&&t.classList&&t.classList.contains(“restSel”)&&t.value) startRestTimer(t.value); });
+
+// ─────────────────────────────────────────
+// Day presets + Abs/Cardio add-ons
+// ─────────────────────────────────────────
+function fillNumSelect(sel,from,to,defVal){
+if(!sel)return; sel.innerHTML=””;
+for(let i=from;i<=to;i++){const o=document.createElement(“option”);o.value=String(i);o.textContent=String(i);sel.appendChild(o);}
+sel.value=String(defVal);
+}
+
+function initAbsCardioControls(){
+const absSelect=$(“extraAbsExercise”);
+if(absSelect){ absSelect.innerHTML=””; (auxGroups[“Abs”]||[]).forEach(v=>{const o=document.createElement(“option”);o.value=v;o.textContent=v;absSelect.appendChild(o);}); }
+fillNumSelect($(“extraAbsSets”),1,6,3);
+const repsSel=$(“extraAbsReps”);
+if(repsSel){ repsSel.innerHTML=””; [8,10,12,15,20,25,30].forEach(v=>{const o=document.createElement(“option”);o.value=String(v);o.textContent=String(v);repsSel.appendChild(o);}); repsSel.value=“20”; }
+const cm=$(“cardioMinutes”);
+if(cm){ cm.innerHTML=””; [0,10,12,15,20,25,30,35,40].forEach(v=>{const o=document.createElement(“option”);o.value=String(v);o.textContent=v===0?”—”:String(v);cm.appendChild(o);}); cm.value=“20”; }
+if($(“cardioIntensity”))$(“cardioIntensity”).value=“Easy (Zone 2)”;
+}
+
+function applyDayPreset(){
+const key=$(“dayPreset”)?.value||“custom”;
+const preset=dayPresets[key]||dayPresets.custom;
+if(preset.primary){ $(“primaryGroup”).value=preset.primary; $(“primaryGroup”).dispatchEvent(new Event(“change”)); }
+toast(key===“custom”?“Custom day”:“Preset applied”);
+}
+
+$(“dayPreset”).addEventListener(“change”,()=>applyDayPreset());
+
+function autoFillAbsAndCardio(pg){
+const absOptions=auxGroups[“Abs”]||[];
+if($(“extraAbsExercise”))$(“extraAbsExercise”).value=absOptions.length?absOptions[Math.floor(Math.random()*absOptions.length)]:””;
+if($(“extraAbsSets”))$(“extraAbsSets”).value=“4”;
+if($(“extraAbsReps”))$(“extraAbsReps”).value=“20”;
+if(!pg)pg=$(“primaryGroup”).value;
+let type=“Incline Treadmill Walk”,minutes=“20”,intensity=“Easy (Zone 2)”;
+if(pg===“Legs”){type=“Stationary Bike”;minutes=“15”;}
+else if(pg===“Back”){type=“Row Erg”;minutes=“12”;intensity=“Moderate”;}
+else if(pg===“Arms”){type=“Outdoor Walk”;}
+if($(“cardioType”))$(“cardioType”).value=type;
+if($(“cardioMinutes”))$(“cardioMinutes”).value=minutes;
+if($(“cardioIntensity”))$(“cardioIntensity”).value=intensity;
+}
+
+// ─────────────────────────────────────────
+// Init
+// ─────────────────────────────────────────
+initGroupSelects();
+initAbsCardioControls();
+autoFillAbsAndCardio($(“primaryGroup”).value);
+
+const today=new Date();
+$(“workoutDate”).value=`${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,"0")}-${String(today.getDate()).padStart(2,"0")}`;
+
+try{ const u=localStorage.getItem(USER_DEFAULT_KEY); $(“userName”).value=u||“Default”; }catch(e){ $(“userName”).value=“Default”; }
+
+addPrimaryRow();
+updateCounts();
+renderLog();
+// Volume panel pre-renders in background so it’s instant when tab is clicked
+renderVolumePanel();
+
+// ── Bottom nav (mobile) ──
+// Use DOMContentLoaded since nav HTML is after this script tag
+// ─────────────────────────────────────────
+// Theme toggle
+// ─────────────────────────────────────────
+(function(){
+const THEME_KEY = “gp_theme”;
+const html = document.documentElement;
+
+```
+function applyTheme(theme){
+  html.setAttribute("data-theme", theme);
+  const isDark = theme === "dark";
+  const icon = document.getElementById("themeIcon");
+  const label = document.getElementById("themeLabel");
+  if (icon) icon.textContent = isDark ? "☀️" : "🌙";
+  if (label) label.textContent = isDark ? "Light" : "Dark";
+}
+
+function getSaved(){
+  try{ return localStorage.getItem(THEME_KEY) || "dark"; }catch(e){ return "dark"; }
+}
+
+applyTheme(getSaved());
+
+document.addEventListener('DOMContentLoaded', () => {
+  const btn = document.getElementById("themeToggle");
+  if (btn){
+    btn.addEventListener("click", () => {
+      const current = html.getAttribute("data-theme") || "dark";
+      const next = current === "dark" ? "light" : "dark";
+      applyTheme(next);
+      try{ localStorage.setItem(THEME_KEY, next); }catch(e){}
+      trackEvent('theme_toggle', {theme: next});
+    });
   }
+});
+```
 
-  function initAbsCardioControls(){
-    
-    const absSelect = $("extraAbsExercise");
-    if (absSelect){
-      absSelect.innerHTML = "";
-      (auxGroups["Abs"] || []).forEach(v => {
-        const o = document.createElement("option");
-        o.value = v;
-        o.textContent = v;
-        absSelect.appendChild(o);
-      });
-    }
-    fillNumSelect($("extraAbsSets"), 1, 6, 3);
+})();
 
-    const repsSel = $("extraAbsReps");
-    if (repsSel){
-      repsSel.innerHTML = "";
-      [8,10,12,15,20,25,30].forEach(v => {
-        const o = document.createElement("option");
-        o.value = String(v);
-        o.textContent = String(v);
-        repsSel.appendChild(o);
-      });
-      repsSel.value = "20";
-    }
-
-    const cm = $("cardioMinutes");
-    if (cm){
-      cm.innerHTML = "";
-      [0,10,12,15,20,25,30,35,40].forEach(v => {
-        const o = document.createElement("option");
-        o.value = String(v);
-        o.textContent = v===0 ? "—" : String(v);
-        cm.appendChild(o);
-      });
-      cm.value = "20";
-    }
-    if ($("cardioIntensity")) $("cardioIntensity").value = "Easy (Zone 2)";
-  }
-
-  function applyDayPreset(){
-    const key = $("dayPreset")?.value || "custom";
-    const preset = dayPresets[key] || dayPresets.custom;
-    if (preset.primary){
-      $("primaryGroup").value = preset.primary;
-      $("primaryGroup").dispatchEvent(new Event("change"));
-    }
-    toast(key === "custom" ? "Custom day" : "Preset applied");
-  }
-
-  $("dayPreset").addEventListener("change", () => applyDayPreset());
-
-  function autoFillAbsAndCardio(primaryGroup){
-    const absOptions = auxGroups["Abs"] || [];
-    if ($("extraAbsExercise")){
-      $("extraAbsExercise").value = absOptions.length ? absOptions[Math.floor(Math.random()*absOptions.length)] : "";
-    }
-    if ($("extraAbsSets")) $("extraAbsSets").value = "4";
-    if ($("extraAbsReps")) $("extraAbsReps").value = "20";
-
-    if (!primaryGroup) primaryGroup = $("primaryGroup").value;
-    let type = "Incline Treadmill Walk";
-    let minutes = "20";
-    let intensity = "Easy (Zone 2)";
-
-    if (primaryGroup === "Legs"){
-      type = "Stationary Bike";
-      minutes = "15";
-      intensity = "Easy (Zone 2)";
-    } else if (primaryGroup === "Back"){
-      type = "Row Erg";
-      minutes = "12";
-      intensity = "Moderate";
-    } else if (primaryGroup === "Arms"){
-      type = "Outdoor Walk";
-      minutes = "20";
-      intensity = "Easy (Zone 2)";
-    }
-
-    if ($("cardioType")) $("cardioType").value = type;
-    if ($("cardioMinutes")) $("cardioMinutes").value = minutes;
-    if ($("cardioIntensity")) $("cardioIntensity").value = intensity;
-  }
-
-
-  // ----------------------------
-  // Init
-  // ----------------------------
-  initGroupSelects();
-  initAbsCardioControls();
-  autoFillAbsAndCardio($("primaryGroup").value);
-
-
-  // Set date default to today (local)
-  const today = new Date();
-  const yyyy = today.getFullYear();
-  const mm = String(today.getMonth()+1).padStart(2,"0");
-  const dd = String(today.getDate()).padStart(2,"0");
-  $("workoutDate").value = `${yyyy}-${mm}-${dd}`;
-
-  // Default user name (remember last used)
-  try{
-    const u = localStorage.getItem(USER_DEFAULT_KEY);
-    if (u) $("userName").value = u;
-    else $("userName").value = "Default";
-  }catch(e){ $("userName").value = "Default"; }
-  // Start with one primary row
-  addPrimaryRow();
-  updateCounts();
-  renderLog();
+document.addEventListener(‘DOMContentLoaded’, () => {
+const navSections = {
+navBuild: ‘sectionBuild’,
+navLog: ‘sectionLog’,
+navVolume: ‘sectionLog’
+};
+[‘navBuild’,‘navLog’,‘navVolume’].forEach(id => {
+const btn = document.getElementById(id);
+if (!btn) return;
+btn.addEventListener(‘click’, () => {
+document.querySelectorAll(’.navItem’).forEach(n => n.classList.remove(‘active’));
+btn.classList.add(‘active’);
+document.querySelectorAll(’.pageSection’).forEach(s => s.classList.remove(‘active’));
+const section = document.getElementById(navSections[id]);
+if (section) section.classList.add(‘active’);
+if (id === ‘navVolume’) switchTab(‘Volume’);
+else if (id === ‘navLog’) switchTab(‘Log’);
+window.scrollTo({top: 0, behavior: ‘smooth’});
+trackEvent(‘nav_tab’, { tab: id });
+});
+});
+});
 
 })();
 </script>
 
-  
-  <div id="restTimer" style="position:fixed; right:12px; bottom:10px; z-index:60; display:none;">
+  <div id="restTimer" style="position:fixed; right:12px; bottom:calc(var(--nav-h) + env(safe-area-inset-bottom) + 8px); z-index:60; display:none;">
     <div class="pill" style="gap:10px; padding:10px 12px; border-radius:999px;">
       <span class="dot2" style="width:10px;height:10px;border-radius:999px;"></span>
       <span id="restTimerLabel" style="color:var(--text); font-size:12.5px;">Rest: 00:00</span>
@@ -1627,9 +1967,22 @@ if (!shownItems.length){
     </div>
   </div>
 
-  <div id="revFooter" style="position:fixed;left:12px;bottom:10px;z-index:50;font-size:11px;opacity:.55;">
-    Rev v15 • Build 2026-02-24 17:58:46
-  </div>
+  <!-- Bottom nav (mobile) -->
+
+  <nav class="bottomNav" role="navigation" aria-label="Main navigation">
+    <button class="navItem active" id="navBuild" type="button">
+      <span class="navIcon">💪</span>
+      <span class="navLabel">BUILD</span>
+    </button>
+    <button class="navItem" id="navLog" type="button">
+      <span class="navIcon">📋</span>
+      <span class="navLabel">LOG</span>
+    </button>
+    <button class="navItem" id="navVolume" type="button">
+      <span class="navIcon">📈</span>
+      <span class="navLabel">VOLUME</span>
+    </button>
+  </nav>
 
 </body>
 </html>
